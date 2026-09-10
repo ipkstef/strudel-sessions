@@ -1,0 +1,64 @@
+// "Wolves at the Fence" @by Stefanos Amanuel
+// @genre dark dnb, roller
+// @version 1.0
+// @license CC BY-NC-SA 4.0
+// 174 bpm, E phrygian. Full-speed roller: Reese bass in a 3-3-2 roll, filter-plucked dissonant stabs, sliced whispers (CC0 freesound), cello drone, metallic pad, amen + 909 with metal and industrial hits. Everything but the bass drops out on bar 16.
+
+samples('github:tidalcycles/dirt-samples')
+samples({ whisper: 'https://cdn.freesound.org/previews/377/377743_6769439-lq.mp3' }) // whispering, CC0
+setcpm(174/4)
+
+let chords = "<Em9 F^7 Em9 [F^7 Bb^7]>"
+let roots  = "<28 29 28 [29 34]>"      // e1 f1 e1 [f1 bb1] as midi
+let bassRhythm = "x@3 x@3 x@2 x@3 x@3 x@2"   // 3-3-2-3-3-2 roll
+let drop = "<1!15 0>"                     // everything but the bass drops out on bar 16
+
+// REESE + SUB -----------------------------------------------------------
+$: note(roots).struct(bassRhythm)
+  .s("sawtooth")
+  .superimpose(x => x.add(note(.2)), x => x.add(note(-.2)).add(note(12)).velocity(.4))
+  .lpf(perlin.slow(2).range(180, 900)).lpq(5).shape(.35)
+  .release(.05).clip(.9).gain(.4).orbit(3)
+$: note(roots).struct(bassRhythm)
+  .s("sine").shape(.25).lpf(180).attack(.004).release(.06).clip(.9).gain(.9)
+  ._scope()
+
+// STABS: filter-plucked, dissonant, on 2, 7 and 13 -----------------------------
+$: chord(chords).anchor("e5").voicing().struct("~@2 x ~@4 x ~@5 x ~@2")
+  .s("sawtooth").lpf(300).lpenv(4).lpa(.01).lpd(.15).lps(0)
+  .release(.08).clip(.5).gain(.35)
+  .delay(.3).delaytime(.345).delayfeedback(.4).room(.4).roomsize(3).orbit(3)
+  .mask(drop)
+  ._pianoroll()
+
+// WHISPERS, sliced and scattered ------------------------------------------------
+$: s("whisper").slice(16, "<[0 ~ 5 ~ ~ 9 ~ 2] [~ 12 ~ ~ 7 ~ 3 ~]>")
+  .cut(2).hpf(1200).pan(rand).gain(.7)
+  .room(.6).roomsize(4).delay(.4).delaytime(.26).delayfeedback(.5)
+  .sometimesBy(.2, x => x.speed(-1)).degradeBy(.15)
+
+// CELLO DRONE + METALLIC PAD --------------------------------------------------------
+$: note("<e2 f2 e2 [f2 bb1]>").s("gm_cello")
+  .attack(.8).release(1).clip(1).lpf(700).gain(.35).room(.8).roomsize(8).orbit(2)
+$: chord(chords).anchor("g4").voicing().s("gm_pad_metallic")
+  .attack(.6).release(1).clip(1).lpf(sine.slow(12).range(300, 1500))
+  .gain(.3).room(.9).roomsize(8).orbit(2)
+
+// DRUMS ---------------------------------------------------------------------
+$: n("<[0 1 2 3 4 5 6 7] [8 9 10 11 12 13 14 15]>").s("amencutup")
+  .cut(1).speed(174/136).hpf(300).lpf(5000).gain(.55)
+  .lastOf(4, x => x.rev()).sometimesBy(.1, ply(2)).mask(drop)
+$: s("bd").beat("0,10", 16).bank("RolandTR909").shape(.2).gain(1.15)
+  .duck("2:3").duckdepth(".45:.3").duckattack(.12).mask(drop)
+$: s("sd").beat("4,12", 16).bank("RolandTR909").shape(.15).hpf(150).gain(1)
+  .room(.3).roomsize(2).mask(drop)
+$: s("sd").beat("<[7,14] [7,11,14]>", 16).bank("RolandTR909").gain(.3).speed(1.25).hpf(800).mask(drop)
+$: s("hh*16").bank("RolandTR909").gain("[.5 .2 .35 .2]*4")
+  .pan(sine.slow(3).range(.35,.65)).sometimesBy(.1, x => x.speed(.7)).mask(drop)
+$: s("metal").n("<3 7 1 9>").beat("<6 [6,14]>", 16).speed(1.5).gain(.35).pan(.3).room(.3)
+$: s("industrial").n(irand(32)).beat("<2 9 [2,11] 5>", 16).hpf(500).cut(4).gain(.4).pan(.7)
+
+// AIR ---------------------------------------------------------------------------------
+$: s("space").n("<3 11 7>").slow(4).gain(.2).lpf(2000).room(.8).roomsize(8)
+$: s("pink").gain(.04).lpf(120)
+$: s("crackle").density(.02).gain(.12).hpf(2000)

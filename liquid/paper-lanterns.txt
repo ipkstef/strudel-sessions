@@ -1,0 +1,89 @@
+// "Paper Lanterns" @by Stefanos Amanuel
+// @genre liquid dnb
+// @version 1.1
+// @license CC BY-NC-SA 4.0
+// 174 bpm, A minor. Hybrid Minds style. 8-bar progression (Am9 F^7 C^9 G / Am9 F^7 Dm9 E7). 64-bar form: 8 intro / 8 build / 16 drop / 8 breakdown / 16 second drop / 8 outro. Piano broken chords, strings, re-pitched sung vocal + spoken hook (CC0 samples from freesound).
+
+samples('github:tidalcycles/dirt-samples')
+samples({
+  vox:    { e4: 'https://cdn.freesound.org/previews/315/315856_4557960-lq.mp3' }, // sung E, CC0 (bevibeldesign)
+  dreams: 'https://cdn.freesound.org/previews/610/610528_13509537-lq.mp3',         // "do you remember your dreams?" CC0 (Sample_Me)
+  halo:   'https://cdn.freesound.org/previews/315/315942_4557960-lq.mp3',         // long high note, CC0 (bevibeldesign)
+})
+setcpm(174/4)
+
+let chords = "<Am9 F^7 C^9 G Am9 F^7 Dm9 E7>"      // 8 bars: second half turns home through Dm9 and E7
+let roots  = "<a1 f1 c2 g1 a1 f1 d1 e1>"
+// arrangement masks (1 = on), 64 bars long
+// 1-8 intro / 9-16 build / 17-32 drop / 33-40 breakdown / 41-56 second drop / 57-64 outro
+let intro = "<1!8 0!56>"
+let build = "<0!8 1!8 0!48>"
+let drop  = "<0!16 1!16 0!8 1!24>"          // drums-in sections: both drops and the outro
+let drops = "<0!16 1!16 0!8 1!16 0!8>"      // the two drops only: strings, reese, chipmunk
+let drums = "<0!8 1!24 0!8 1!24>"
+
+// VOCALS -------------------------------------------------------------
+// the spoken hook, once per 8 bars in the intro, drowned in delay
+$: s("dreams").slow(8).mask("<1 0 0 0 1 0 0 0>/8")          // intro and breakdown
+  .delay(.6).delaytime(.345).delayfeedback(.6)
+  .room(.9).roomsize(8).hpf(300).gain(.9)
+
+// sung E, sliced and re-pitched to the chord tones = the hook
+$: s("vox").slice(8, "<[0 ~ 2 ~ 4 ~ 1 ~] [0 ~ 2 ~ ~ 6 ~ 1]>")
+  .note("<[e4 e4] [f4 e4] [e4 g4] [d4 e4] [e4 e4] [f4 e4] [f4 d4] [e4 e4]>")
+  .clip(1).attack(.02).release(.15)
+  .delay(.5).delaytime(.345).delayfeedback(.5)
+  .room(.7).roomsize(6).hpf(250).gain(.8).orbit(2)
+  .mask("<0!4 1!60>")
+  ._pianoroll()
+
+// octave-up chipmunk answer, drop only
+$: s("vox").slice(8, "~ ~ ~ 3 ~ ~ 5 ~").note("<a4 a4 g4 g4 a4 a4 f4 e4>")
+  .clip(1).release(.1).speed(1).gain(.45).pan(.7)
+  .delay(.5).delaytime(.52).delayfeedback(.4).room(.6).roomsize(5).orbit(2)
+  .mask(drops).degradeBy(.2)
+
+// long angelic note as a swell into the drop
+$: s("halo").slow(4).mask("<0!12 1!4 0!20 1!4 0!24>")
+  .lpf(saw.slow(4).range(300, 6000)).gain(.35).room(.9).roomsize(8).pan(sine.slow(4).range(.3,.7))
+
+// PIANO (the Hybrid Minds engine: broken chords in 8ths) --------------
+$: chord(chords).anchor("a5").voicing().arp("0 2 3 1 0 2 3 2")
+  .s("piano").velocity("[.7 .5 .6 .5]*2").clip(1.5)
+  .room(.6).roomsize(5).delay(.25).delaytime(.345).delayfeedback(.3)
+  .gain(.8).orbit(3)
+  ._pianoroll()
+
+// STRINGS + PAD ----------------------------------------------------------
+$: chord(chords).anchor("c5").voicing().s("supersaw").detune(.25)
+  .attack(.5).release(1).clip(1)
+  .lpf(sine.slow(16).range(500, 2200)).room(.8).roomsize(7).gain(.25).orbit(2)
+$: chord(chords).anchor("e5").voicing().s("gm_string_ensemble_1")
+  .attack(.7).release(1.2).clip(1).gain(.45).room(.8).roomsize(7).orbit(2)
+  .mask(drops)
+
+// BASS ---------------------------------------------------------------
+$: note(roots).struct("x@6 x@4 x@4 ~ x")
+  .s("sine").shape(.25).lpf(220).attack(.005).release(.08).clip(.95).gain(.9)
+  .mask(drums)
+  ._scope()
+$: note(roots).struct("x@6 x@4 x@4 ~ x").add(note(12))
+  .s("supersaw").detune(.15).lpf(450).lpq(1).clip(.95).gain(.25).orbit(3)
+  .mask(drops)
+
+// DRUMS --------------------------------------------------------------
+$: s("breaks165/2").fit().chop(16).cut(1).hpf(200).gain(.5)
+  .lastOf(8, ply(2)).mask(drums)
+$: s("bd").beat("0,10", 16).bank("RolandTR909").gain(1.1)
+  .duck("2:3").duckdepth(".5:.3").duckattack(.14).mask(drop)
+$: s("sd").beat("4,12", 16).bank("RolandTR909").gain(1).room(.35).roomsize(3).mask(drop)
+$: s("sd").beat("7,14", 16).bank("RolandTR909").gain(.25).speed(1.3).hpf(900).mask(drop)
+$: s("hh*16").bank("RolandTR909").gain("[.5 .2 .35 .2]*4").pan(sine.slow(3).range(.4,.6))
+  .lpf(saw.slow(8).range(800, 9000)).mask(build)          // filtered hats in the build
+$: s("hh*16").bank("RolandTR909").gain("[.55 .25 .4 .25]*4").mask(drop)
+$: s("cr").bank("RolandTR909").gain(.5).room(.5).mask("<0!16 1 0!23 1 0!23>")
+// riser into the drop
+$: s("white").slow(4).attack(3).release(.5).lpf(saw.slow(4).range(200, 9000)).gain(.35).mask("<0!12 1!4 0!20 1!4 0!24>")
+
+// AIR ------------------------------------------------------------------
+$: s("crackle").density(.02).gain(.15).hpf(2000)

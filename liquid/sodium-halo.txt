@@ -1,0 +1,59 @@
+// "Sodium Halo" @by Stefanos Amanuel
+// @genre liquid dnb
+// @version 1.0
+// @license CC BY-NC-SA 4.0
+// 172 bpm, D minor. Night drive: rolling break under a clean two-step, Rhodes stabs, vibes, supersaw pad.
+
+samples('github:tidalcycles/dirt-samples')
+setcpm(172/4)
+
+let chords = "<Dm9 Bb^7 Gm9 C9>"
+
+// DRUMS ------------------------------------------------------
+// rolling break underneath, chopped so we can fill on it
+$: s("breaks165/2").fit().chop(16).cut(1)
+  .hpf(180).gain(.55)
+  .lastOf(4, ply(2))
+  .sometimesBy(.08, x => x.speed(-1))
+
+// clean two-step on top: kick 1 + "and of 3", snare 2 + 4
+$: s("bd").beat("0,10", 16).bank("RolandTR909")
+  .lpf(2500).gain(1.1)
+  .duck("2:3").duckdepth(".45:.25").duckattack(.14)
+$: s("sd").beat("4,12", 16).bank("RolandTR909").gain(.95).room(.25).roomsize(2)
+$: s("sd").beat("7,14", 16).bank("RolandTR909").gain(.28).speed(1.3).hpf(900)  // ghost snares
+$: s("hh*16").bank("RolandTR909")
+  .gain("[.55 .25 .4 .25]*4").pan(sine.slow(3).range(.35,.65))
+  .sometimesBy(.15, x => x.speed(1.5))
+$: s("oh").beat("14", 16).bank("RolandTR909").gain(.3).release(.1)
+
+// SUB -------------------------------------------------------
+$: note("<d1 bb1 g1 c1>").struct("x@6 x@4 x@6")
+  .s("sine").shape(.25).lpf(240)
+  .attack(.005).release(.08).clip(.95).gain(.9)
+  ._scope()
+
+// PADS (orbit 2, sidechained) -------------------------------
+$: chord(chords).voicing().s("supersaw").detune(.3)
+  .attack(.6).release(1.2).clip(1)
+  .lpf(sine.slow(16).range(500, 1800)).lpq(2)
+  .room(.85).roomsize(6).gain(.28).orbit(2)
+
+// RHODES STABS (orbit 3, sidechained) -----------------------
+$: chord(chords).struct("<[~@2 x ~@3 x ~@3 x ~@5] [~@2 x ~@7 x ~@2 x ~@2]>")
+  .voicing().s("gm_epiano1").velocity(.7)
+  .clip(.6).release(.25)
+  .delay(.4).delaytime(.26).delayfeedback(.45)
+  .room(.4).roomsize(3).gain(.8).orbit(3)
+  ._pianoroll()
+
+// VIBES MELODY -----------------------------------------------
+$: chord(chords).voicing().arp("0 2 1 ~ 3 ~ 2 ~").transpose(12)
+  .s("gm_vibraphone").velocity(.55)
+  .delay(.5).delaytime(.52).delayfeedback(.5)
+  .pan(perlin.range(.3,.7)).room(.6).roomsize(4).gain(.6).orbit(3)
+  .degradeBy(.25)
+
+// AIR ----------------------------------------------------------
+$: s("crackle").density(.02).gain(.15).hpf(2000)
+$: s("wind").n("<3 7 1>").slow(4).gain(.25).lpf(1200).room(.5).roomsize(5)

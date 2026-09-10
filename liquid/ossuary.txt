@@ -1,0 +1,62 @@
+// "Ossuary" @by Stefanos Amanuel
+// @genre dark dnb, halftime
+// @version 1.1
+// @license CC BY-NC-SA 4.0
+// 172 bpm, F minor with major 7ths. Halftime: kick on 1, cavern snare on 3. 32-bar form: chant + choir + sub, drums at 9, bells + organ at 17, piano motif at 25. Low chant is CC0 from freesound.
+
+samples('github:tidalcycles/dirt-samples')
+samples({ chant: 'https://cdn.freesound.org/previews/319/319253_4366671-lq.mp3' }) // low chant, CC0 (adharca)
+setcpm(172/4)
+
+let chords = "<Fm^7 Db^7 Bbm9 C7b9>/2"
+let roots  = "<29 25 34 24>/2"        // f1 db1 bb1 c1 as midi
+let bassRhythm = "x@8 ~@2 x@2 ~ x@3"
+let drums  = "<0!8 1!24>"
+let bells  = "<0!16 1!16>"
+let keys   = "<0!24 1!8>"
+
+// VOICES ---------------------------------------------------------------
+$: s("chant").slow(16).speed(.8).lpf(1500).hpf(250)
+  .room(.8).roomsize(8).delay(.35).delaytime(.523).delayfeedback(.45).gain(.6)
+$: chord(chords).anchor("a4").voicing().s("gm_choir_aahs")
+  .attack(1.5).release(2).clip(1).lpf(900)
+  .room(.7).roomsize(8).gain(.35).orbit(2)
+$: chord(chords).anchor("c4").voicing().s("gm_church_organ")    // font bottoms out at midi 33
+  .attack(.8).release(1.5).clip(1).lpf(400)
+  .room(.5).roomsize(6).gain(.18).orbit(2).mask(bells)
+
+// BELLS on the chord root every other bar, PIANO motif in the last 8 -------
+$: note("<f4 db4 bb3 c4>/2").struct("x ~@15").mask("<1 0>")
+  .s("gm_tubular_bells").velocity(.5).clip(3)
+  .room(.6).roomsize(6).gain(.35).orbit(3).mask(bells)
+$: note("<[~ ab4 ~ ~ ~ g4 ~ ~] [~ ~ ~ f4 ~ ~ ~ ~] [~ ab4 ~ ~ ~ bb4 ~ ~] [~ ~ ~ e4 ~ ~ ~ ~]>")
+  .s("piano").velocity(.55).clip(2).lpf(3000)
+  .room(.5).roomsize(5).gain(.6).orbit(3).mask(keys)
+  ._pianoroll()
+
+// BASS: sub from the start, reese joins the drums ---------------------------
+$: note(roots).struct(bassRhythm)
+  .s("sine").shape(.25).lpf(200).attack(.005).release(.1).clip(.95).gain(.9)
+  ._scope()
+$: note(roots).add(note(12)).struct(bassRhythm)
+  .s("sawtooth").superimpose(x => x.add(note(.18)))
+  .lpf(sine.slow(8).range(150, 600)).lpq(3).shape(.25).clip(.95).gain(.2).orbit(3)
+  .mask(drums)
+
+// DRUMS: halftime. kick on 1, snare on 3 ------------------------------------
+$: s("breaks165/4").fit().hpf(500).gain(.3).mask(drums)      // quarter-speed break as texture only
+$: s("bd").beat("0,10", 16).bank("RolandTR909").lpf(2500).gain(1.1)
+  .duck("2:3").duckdepth(".4:.3").duckattack(.2).mask(drums)
+$: s("sd").beat("8", 16).bank("RolandTR909").gain(1.05).lpf(5000)
+  .room(.5).roomsize(5).mask(drums)
+$: s("sd").beat("<13 [6,13]>", 16).bank("RolandTR909")
+  .gain(.22).speed(1.3).hpf(1200).mask(drums)                // ghosts
+$: s("hh*8").bank("RolandTR909").gain("[.35 .12]*4").degradeBy(.15).pan(.55).mask(drums)
+$: s("gm_taiko_drum").note("f2").beat("[8,12]", 16).mask("<0 0 0 1>")
+  .gain(.5).room(.5).roomsize(5).mask(drums)
+
+// THE ROOM ----------------------------------------------------------------
+$: s("crow").n("<0 2 1 3>").slow(4).gain(.25).room(.5).roomsize(6).pan("<.3 .7>")
+$: s("wind").n("<5 8 2>").slow(8).gain(.25).lpf(600)
+$: s("pink").gain(.04).lpf(150)
+$: s("crackle").density(.01).gain(.12).hpf(2000)

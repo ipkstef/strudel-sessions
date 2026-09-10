@@ -1,0 +1,80 @@
+// "Liquid Toolbox" @by Stefanos Amanuel
+// @genre liquid dnb
+// @version 1.0
+// not a track: labelled building blocks pulled from the tracks in this folder. copy lanes out as needed.
+
+samples('github:tidalcycles/dirt-samples')
+setcpm(172/4)          // 1 cycle = 1 bar. 170-174 is the liquid zone
+
+// --- 1. two-step skeleton (the whole genre lives on steps 0,4,10,12) ----
+// beat(steps, 16): step numbers in a 16th grid. kick 1 + "and of 3", snare 2 + 4
+$: s("bd").beat("0,10", 16).bank("RolandTR909")
+$: s("sd").beat("4,12", 16).bank("RolandTR909")
+$: s("sd").beat("7,14", 16).bank("RolandTR909").gain(.25).speed(1.3).hpf(900) // ghosts
+$: s("hh*16").bank("RolandTR909").gain("[.55 .25 .4 .25]*4")                   // accent 8ths
+
+// --- 2. rolling break under the one-shots -------------------------------
+// breaks165 is a 2-bar loop -> "/2" spans it over 2 cycles, fit() locks it to tempo
+// chop() slices it so lastOf()/ply() can fill, cut(1) chokes the stutters
+$: s("breaks165/2").fit().chop(16).cut(1).hpf(180).gain(.5)
+  .lastOf(4, ply(2))                       // fill on every 4th bar
+  .sometimesBy(.08, x => x.speed(-1))      // occasional reversed slice
+
+// or the amen as 32 numbered slices (8 per bar, in original order = the break)
+$: n("<[0 1 2 3 4 5 6 7] [8 9 10 11 12 13 14 15]>").s("amencutup")
+  .cut(1).speed(172/136).hpf(250).gain(.5)
+  .lastOf(8, x => x.rev().ply("<2 1 2 4>"))
+
+// --- 3. warm sub (sine + a little saturation, filtered) ------------------
+// sits on the kick (step 0 and 10) plus one push at step 6
+$: note("<d1 bb1 g1 c1>").struct("x@6 x@4 x@6")
+  .s("sine").shape(.25).lpf(240).attack(.005).release(.08).clip(.95)
+
+// --- 4. chords the liquid way: 9ths and maj7s, voiced automatically --------
+// chord() takes symbols (Dm9, Bb^7, A7b9, Gm11, C69...), voicing() stacks the
+// notes with smooth voice leading, anchor() moves the register
+let chords = "<Dm9 Bb^7 Gm9 C9>"
+$: chord(chords).anchor("g5").voicing()
+  .struct("<[~@2 x ~@3 x ~@3 x ~@5] [~@2 x ~@7 x ~@2 x ~@2]>")   // offbeat stabs
+  .s("gm_epiano1").velocity(.7).clip(.6)
+  .delay(.4).delaytime(.26).delayfeedback(.45)   // .26s = 3/16 bar @172 (dotted 8th)
+  .room(.4).roomsize(3).orbit(3)
+
+// pad: same chords, slow attack, moving filter, long verb, its own orbit so it can be ducked
+$: chord(chords).voicing().s("supersaw").detune(.3)
+  .attack(.6).release(1.2).clip(1)
+  .lpf(sine.slow(16).range(500,1800)).room(.85).roomsize(6).gain(.28).orbit(2)
+
+// --- 5. sidechain: kick ducks orbits 2 and 3 with different depths ----------
+$: s("bd").beat("0,10", 16).bank("RolandTR909")
+  .duck("2:3").duckdepth(".45:.25").duckattack(.14)
+// (first cycle logs "duck target orbit 2 does not exist" until the pad fires. harmless)
+
+// --- 6. melody from the chord itself: arp() picks note indices ---------------
+$: chord(chords).voicing().arp("0 2 1 ~ 3 ~ 2 ~").transpose(12)
+  .s("gm_vibraphone").velocity(.55).degradeBy(.25)      // degrade = breathing room
+  .delay(.5).delaytime(.52).delayfeedback(.5).room(.6).roomsize(4).orbit(3)
+
+// --- 7. "vocals" without a vocal sample ---------------------------------------
+$: chord(chords).voicing().arp("3 ~ ~ 2 ~ 3 ~ ~").transpose(12)
+  .s("gm_voice_oohs").vowel("<o a e o>").attack(.05).release(.4).clip(.7)
+  .degradeBy(.3).sometimesBy(.2, x => x.speed(2))         // chipmunk chop, classic
+  .delay(.5).delaytime(.69).delayfeedback(.55).room(.7).roomsize(6).gain(.5).orbit(2)
+
+// with a real sample: chop a phrase and re-pitch it to the key
+samples({ voc: 'https://cdn.freesound.org/previews/495/495416_10350281-lq.mp3' })
+$: s("voc").chop(8).n("<0 3 5 3>").slow(2)
+  .note("<d4 f4 g4 a4>").speed(1).cut(3).room(.8).gain(.6)
+
+// --- 8. air: rain, vinyl, wind, birds ------------------------------------------
+$: s("crackle").density(.02).gain(.15).hpf(2000)            // built-in vinyl noise
+$: s("pink").gain(.04).lpf(4000).hpf(800)                   // rain
+$: s("wind").n("<3 7 1>").slow(4).gain(.25).lpf(1200).room(.5).roomsize(5)
+$: s("birds").n("<2 6>").slow(8).gain(.15).hpf(2000).room(.8).roomsize(8)
+
+// --- 9. arrangement tricks ---------------------------------------------------
+// drop the drums for a bar every 16:  .mask("<1!15 0>")
+// filter sweep intro:                 .lpf(saw.slow(32).range(200,6000))
+// half-time switch-up:                .lastOf(16, x => x.slow(2))
+// reset/glitch into the drop:         .reset("<x@30 [x*[8 16]]@2>")   (from froos)
+// swing the hats a hair:              s("hh*16").swingBy(1/24, 8)

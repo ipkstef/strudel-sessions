@@ -1,0 +1,87 @@
+// "Slow Weather" @by Stefanos Amanuel
+// @genre liquid dnb, generative, long-form
+// @version 1.0
+// @license CC BY-NC-SA 4.0
+// 172 bpm, D minor / F major, drops a tone for the second half. 128-bar looping form for working: four progressions rotate every 16 bars, drums switch between break and amen, 8-bar breakdown every 64, halftime bar every 16, fills / arp shapes / stab rhythms / textures are dice rolls.
+
+samples('github:tidalcycles/dirt-samples')
+setcpm(172/4)
+
+// four progressions, 2 bars per chord, 16 bars each
+let chords = "<[Dm9 Bb^7 Gm9 C9]*2 [F^9 Am7 Dm9 Bb^7]*2 [Dm9 Gm9 Bb^7 A7b9]*2 [Bb^7 C9 Dm9 A7b9]*2>/16"
+let roots  = "<[d1 bb1 g1 c1]*2 [f1 a1 d1 bb1]*2 [d1 g1 bb1 a1]*2 [bb1 c1 d1 a1]*2>/16"
+let key    = "<0 -2>/64"                 // second half sits a tone lower
+let drumsOn  = "<1!56 0!8>"              // 8-bar breakdown every 64
+let twoStep  = "<1 1 0 1>/32"            // bars 65-96 hand over to the amen
+let amenMode = "<0 0 1 0>/32"
+
+// DRUMS ------------------------------------------------------------
+$: s("breaks165/2").fit().chop(16).cut(1).hpf(200).gain(.45)
+  .lastOf(8, ply("<2 2 [2 4] 2>"))                 // fill flavour rotates
+  .rarely(x => x.speed(-1))
+  .sometimesBy(.05, x => x.hurry(2))
+  .mask(twoStep).mask(drumsOn)
+$: n("<[0 1 2 3 4 5 6 7] [8 9 10 11 12 13 14 15]>").s("amencutup")
+  .cut(1).speed(172/136).hpf(250).lpf(5000).gain(.45)
+  .lastOf(4, x => x.rev()).sometimesBy(.08, ply(2)).degradeBy(.05)
+  .mask(amenMode).mask(drumsOn)
+// kick: 1 + and-of-3, except every 16th bar goes halftime
+$: s("bd").beat("<[0,10]!15 0>", 16).bank("RolandTR909").gain(1)
+  .duck("2:3").duckdepth(".35:.2").duckattack(.14).mask(drumsOn)
+// snare: 2 + 4, a ghost fill every 8th bar, halftime every 16th
+$: s("sd").beat("<[4,12]!7 [4,12,14,15] [4,12]!7 8>", 16).bank("RolandTR909")
+  .gain(.9).room(.25).roomsize(2).mask(drumsOn)
+$: s("sd").beat("<[7,14] [7,14] [7,11,14] [7,14]>", 16).bank("RolandTR909")
+  .gain(.22).speed(1.3).hpf(900).degradeBy(.2).mask(drumsOn)
+$: s("hh*16").bank("RolandTR909")
+  .gain("<[.5 .2 .35 .2]*4 [.4 .2 .5 .2 .3 .2 .45 .2]*2>/8")
+  .pan(sine.slow(5).range(.4,.6)).sometimesBy(.05, x => x.speed(1.5))
+  .mask(drumsOn)
+$: s("sh").beat("<[6,14] [6,9,14] [6,14] [2,6,14]>", 16).bank("AkaiLinn").gain(.35)
+  .mask("<0 1>/32").mask(drumsOn)                   // shaker on alternate 32s
+$: s("cr").bank("RolandTR909").gain(.35).room(.5).mask("<1 0!63>")   // crash on the drop back in
+
+// SUB ---------------------------------------------------------------
+$: note(roots).transpose(key).struct("<[x@6 x@4 x@6] [x@6 x@4 x@4 ~ x] [x@8 x@8] [x@6 x@2 ~@2 x@6]>/16")
+  .s("sine").shape(.2).lpf(220).attack(.005).release(.08).clip(.95).gain(.85)
+  ._scope()
+
+// PAD (orbit 2) ----------------------------------------------------------
+$: chord(chords).anchor("<c5 e5 g5 e5>/8").voicing().transpose(key)
+  .s("<supersaw gm_pad_warm>/32").detune(.25)
+  .attack(.7).release(1.4).clip(1)
+  .lpf(perlin.slow(16).range(450, 1800)).lpq(1.5)
+  .room(.8).roomsize(6).gain(".26 .3").orbit(2)
+
+// KEYS: rhodes stabs, rhythm is a dice roll per bar, instrument swaps every 32 (orbit 3) ------
+$: chord(chords).anchor("g5").voicing().transpose(key)
+  .struct("[~@2 x ~@3 x ~@3 x ~@5] | [~@2 x ~@7 x ~@2 x ~@2] | [~ x ~@5 x ~@8] | [~@2 x ~@9 x ~@3]")
+  .s("<gm_epiano1 piano>/32").velocity("<.65 .7 .55 .6>")
+  .clip(.7).release(.3)
+  .delay(.35).delaytime("<.26 .345 .52>/16").delayfeedback(.4)
+  .room(.4).roomsize(3).gain(.75).orbit(3)
+  ._pianoroll()
+
+// MELODY: vibes arp from the voicing, shape rolled per bar, thinned out, drops out sometimes ----
+$: chord(chords).voicing().transpose(key)
+  .arp("[0 2 1 ~ 3 ~ 2 ~] | [0 1 3 2 ~ 1 ~ ~] | [3 ~ 2 ~ 1 ~ 0 ~] | [~ 0 ~ 2 ~ 3 1 ~]").add(note(12))
+  .s("<gm_vibraphone gm_music_box gm_vibraphone gm_epiano1>/16").velocity(.5)
+  .degradeBy(.3).mask("<1 1 1 0 1 1 0 1>/4")
+  .delay(.45).delaytime(.52).delayfeedback(.45)
+  .pan(perlin.slow(3).range(.3,.7)).room(.6).roomsize(4).gain(.55).orbit(3)
+
+// VOICES: oohs on the top note, rare ---------------------------------------
+$: chord(chords).voicing().transpose(key).arp("3 ~ ~ ~ ~ 2 ~ ~").add(note(12))
+  .s("gm_voice_oohs").vowel("<o a e>").attack(.1).release(.5).clip(.8).velocity(.45)
+  .degradeBy(.4).mask("<0 1 0 0 1 0 0 0>/8")
+  .delay(.5).delaytime(.69).delayfeedback(.5).room(.7).roomsize(6).gain(.45).orbit(2)
+
+// BREAKDOWN FILLER: when the drums are gone, a slow filtered sweep pad steps in ------------
+$: chord(chords).anchor("c4").voicing().transpose(key).s("gm_string_ensemble_1")
+  .attack(1.5).release(2).clip(1).lpf(saw.slow(8).range(300, 2500))
+  .room(.9).roomsize(8).gain(.35).orbit(2).mask("<0!56 1!8>")
+
+// AIR: a different field recording drifts through every 4 bars ---------------------------
+$: s("<wind:3 birds:2 ~ wind:7 ~ birds:6 ~ crow:1 ~ wind:1 ~ ~>/4")
+  .gain(.18).hpf(600).lpf(4000).room(.7).roomsize(7).pan(rand)
+$: s("crackle").density(.02).gain(.12).hpf(2000)

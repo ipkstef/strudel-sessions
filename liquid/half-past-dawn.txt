@@ -1,0 +1,57 @@
+// "Half Past Dawn" @by Stefanos Amanuel
+// @genre liquid dnb
+// @version 1.0
+// @license CC BY-NC-SA 4.0
+// 174 bpm, F major. Calibre-ish: Amen slices played in order then mangled, piano, warm pad, choir oohs as the vocal.
+
+samples('github:tidalcycles/dirt-samples')
+setcpm(174/4)
+
+let chords = "<F^9 Am7 Dm9 Bb^7 Gm9 C9 Am7 Bb^7>/2"   // 8-bar loop, 2 bars per chord
+let roots  = "<f1 a1 d1 bb1 g1 c1 a1 bb1>/2"
+
+// DRUMS ------------------------------------------------------
+// the amen, sliced: 32 slices = 4 bars of 8ths. play it "in order" then mangle
+$: n("<[0 1 2 3 4 5 6 7] [8 9 10 11 12 13 14 15] [0 1 2 3 4 5 6 7] [24 25 26 27 28 29 30 31]>")
+  .s("amencutup").cut(1).speed(174/136)
+  .hpf(250).lpf(6000).gain(.5)
+  .lastOf(8, x => x.rev().ply("<2 1 2 4>"))       // roll into the next 8
+  .sometimesBy(.1, x => x.add(n(irand(8))))   // occasional wrong slice = human
+$: s("bd").beat("0,10", 16).bank("AkaiLinn").gain(1.05)
+  .duck("2:3").duckdepth(".5:.3").duckattack(.12)
+$: s("sd").beat("4,12", 16).bank("AkaiLinn").gain(.9).hpf(150).room(.2).roomsize(2)
+$: s("sh").beat("<[6,14] [6,9,14]>", 16).bank("AkaiLinn").gain(.45)   // shaker offbeats
+$: s("hh*16").bank("AkaiLinn").gain("[.5 .2 .35 .2]*4")
+  .degradeBy(.08).pan(perlin.range(.4,.6))
+
+// SUB -------------------------------------------------------
+$: note(roots).struct("x@6 x@2 ~@2 x@4 ~ x")
+  .s("sine").shape(.2).lpf(200)
+  .attack(.004).release(.06).clip(.9).gain(.9)
+  ._scope()
+
+// PIANO ------------------------------------------------------
+$: chord(chords).anchor("g5").voicing()
+  .struct("<[~ x ~ ~ ~ ~ x ~ ~ ~ x ~ ~ ~ ~ ~] [~ x ~ ~ ~ ~ ~ ~ ~ ~ x ~ ~ x ~ ~]>")
+  .s("piano").velocity("<.6 .7 .55 .65>").clip(1.2)
+  .delay(.3).delaytime(.345).delayfeedback(.35)       // dotted 8th @174
+  .room(.55).roomsize(4).gain(.75).orbit(3)
+  ._pianoroll()
+
+// WARM PAD (orbit 2) ----------------------------------------
+$: chord(chords).anchor("c5").voicing()
+  .s("gm_pad_warm").attack(.8).release(1.5).clip(1)
+  .lpf(sine.slow(32).range(400,1400))
+  .room(.9).roomsize(8).gain(.35).orbit(2)
+
+// "VOCAL": choir oohs on the top note, pitched, chopped (orbit 2)
+$: chord(chords).voicing().arp("3 ~ ~ 2 ~ 3 ~ ~").transpose(12)
+  .s("gm_voice_oohs").attack(.05).release(.4).clip(.7)
+  .vowel("<o a e o>").velocity(.5)
+  .delay(.5).delaytime(.69).delayfeedback(.55)
+  .room(.7).roomsize(6).gain(.5).orbit(2)
+  .degradeBy(.3).sometimesBy(.2, x => x.speed(2))
+
+// AIR ----------------------------------------------------------
+$: s("crackle").density(.03).gain(.12).hpf(1500)
+$: s("birds").n("<2 6>").slow(8).gain(.15).hpf(2000).room(.8).roomsize(8).pan(.7)
