@@ -7,7 +7,9 @@
 <style>
   :root { --bg:#0b0d0b; --fg:#c9d1c8; --dim:#5f6b5e; --acc:#7ee787; --err:#ff7b72; }
   * { box-sizing: border-box; }
-  html, body { height: 100%; margin: 0; background: var(--bg); color: var(--fg);
+  /* colour lives on html only: a body background would paint over the z-index -1 canvas */
+  html { height: 100%; background: var(--bg); }
+  body { height: 100%; margin: 0; background: transparent; color: var(--fg);
     font: 14px/1.45 ui-monospace, "Cascadia Mono", Consolas, "DejaVu Sans Mono", monospace; }
   body { display: grid; grid-template-rows: auto auto 1fr auto; height: 100vh; }
   header { padding: 8px 12px; border-bottom: 1px solid #1c221b; color: var(--dim); display: flex; gap: 16px; align-items: baseline; }
