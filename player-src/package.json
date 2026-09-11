@@ -14,8 +14,10 @@
     "vite-plugin-bundle-audioworklet": "link:../../strudel/packages/vite-plugin-bundle-audioworklet"
   },
   "dependencies": {
+    "@strudel/codemirror": "link:../../strudel/packages/codemirror",
     "@strudel/core": "link:../../strudel/packages/core",
     "@strudel/draw": "link:../../strudel/packages/draw",
+    "@strudel/edo": "link:../../strudel/packages/edo",
     "@strudel/mini": "link:../../strudel/packages/mini",
     "@strudel/soundfonts": "link:../../strudel/packages/soundfonts",
     "@strudel/tonal": "link:../../strudel/packages/tonal",

@@ -40,7 +40,9 @@ jobs:
 
       - name: install strudel packages
         working-directory: strudel
-        run: pnpm install --frozen-lockfile
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm run jsdoc-json   # the editor package imports doc.json from the repo root
 
       - name: build player
         working-directory: strudel-sessions/player-src

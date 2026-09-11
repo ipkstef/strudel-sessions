@@ -8,12 +8,18 @@ importers:
 
   .:
     dependencies:
+      '@strudel/codemirror':
+        specifier: link:../../strudel/packages/codemirror
+        version: link:../../strudel/packages/codemirror
       '@strudel/core':
         specifier: link:../../strudel/packages/core
         version: link:../../strudel/packages/core
       '@strudel/draw':
         specifier: link:../../strudel/packages/draw
         version: link:../../strudel/packages/draw
+      '@strudel/edo':
+        specifier: link:../../strudel/packages/edo
+        version: link:../../strudel/packages/edo
       '@strudel/mini':
         specifier: link:../../strudel/packages/mini
         version: link:../../strudel/packages/mini

@@ -1,9 +1,9 @@
-import { evalScope, setTime, Pattern, logger, repl as makeRepl } from '@strudel/core';
+import { evalScope, logger } from '@strudel/core';
 import { initAudio, registerSynthSounds, webaudioOutput, getAudioContext, samples, aliasBank } from '@strudel/webaudio';
 import { registerSoundfonts } from '@strudel/soundfonts';
 import { transpiler } from '@strudel/transpiler';
-import { miniAllStrings } from '@strudel/mini';
-import { getDrawContext, cleanupDraw } from '@strudel/draw';
+import { getDrawContext } from '@strudel/draw';
+import { StrudelMirror, codemirrorSettings } from '@strudel/codemirror';
 
 // ---- tracks baked in at build time (sync-tracks.mjs copies ../liquid/*.txt to ./tracks) -----
 const files = import.meta.glob('./tracks/*.txt', { query: '?raw', import: 'default', eager: true });
@@ -14,65 +14,13 @@ const tracks = Object.entries(files)
   })
   .sort((a, b) => (a.title === 'Liquid Toolbox') - (b.title === 'Liquid Toolbox') || a.title.localeCompare(b.title));
 
-// ---- visuals: one full-screen canvas behind the text, 1x pixel ratio to keep it cheap -------------
-getDrawContext('test-canvas', { pixelRatio: 1 });
-for (const n of ['pianoroll', 'scope', 'punchcard', 'spiral', 'pitchwheel']) {
-  if (!Pattern.prototype['_' + n]) {
-    Pattern.prototype['_' + n] = function (...args) {
-      return this[n] ? this[n](...args) : this;
-    };
-  }
-}
-let visuals = true;
-const stripVisuals = (code) => (visuals ? code : code.replace(/\._?(pianoroll|scope|tscope|punchcard|spiral|pitchwheel)\([^)]*\)/g, ''));
-const slider = (v) => v;
-
-// ---- engine ------------------------------------------------------------------------------------
-const CDN = 'https://strudel.b-cdn.net';
-let audioInit;
-const ensureAudio = () => (audioInit ??= initAudio());
-miniAllStrings();
-// webaudioRepl() would close the context it just created (setAudioContext closes the previous one), so build it by hand
-const repl = makeRepl({
-  defaultOutput: webaudioOutput,
-  getTime: () => getAudioContext().currentTime,
-  transpiler,
-  beforeEval: () => cleanupDraw(true),
-  onToggle: (started) => {
-    if (!started) cleanupDraw(true);
-    setState(started);
-  },
-});
-setTime(() => repl.scheduler.now());
-const hush = () => repl.stop();
-const evaluate = (code, autoplay = true) => repl.evaluate(stripVisuals(code), autoplay);
-
-const ready = (async () => {
-  await evalScope(
-    import('@strudel/core'),
-    import('@strudel/mini'),
-    import('@strudel/tonal'),
-    import('@strudel/webaudio'),
-    import('@strudel/soundfonts'),
-    import('@strudel/draw'),
-    { hush, evaluate, slider },
-  );
-  await Promise.all([
-    registerSynthSounds(),
-    registerSoundfonts(),
-    samples(`${CDN}/piano.json`, `${CDN}/piano/`, { prebake: true }),
-    samples(`${CDN}/tidal-drum-machines.json`, `${CDN}/tidal-drum-machines/machines/`, { prebake: true, tag: 'drum-machines' }),
-  ]);
-  aliasBank(`${CDN}/tidal-drum-machines-alias.json`);
-})();
-
-// ---- ui ------------------------------------------------------------------------------------------
+// ---- ui bits -----------------------------------------------------------------------------------
 const $ = (id) => document.getElementById(id);
-const code = $('code');
 const log = $('log');
 const state = $('state');
 const nav = $('tracks');
 let current = -1;
+let visuals = true;
 
 function setState(on) {
   state.textContent = on ? 'playing' : 'stopped';
@@ -90,6 +38,65 @@ document.addEventListener(logger.key, (e) => {
   say(m, /error/i.test(m) ? 'err' : '');
 });
 
+// ---- engine + editor ---------------------------------------------------------------------------
+// _pianoroll() / _scope() become inline widgets under their own line (the editor handles that);
+// the full-screen canvas is only for the non-inline variants. 1x pixel ratio keeps it cheap.
+const CDN = 'https://strudel.b-cdn.net';
+const drawContext = getDrawContext('test-canvas', { pixelRatio: 1 });
+let audioInit;
+const ensureAudio = () => (audioInit ??= initAudio());
+const stripVisuals = (code) => (visuals ? code : code.replace(/\._?(pianoroll|scope|tscope|punchcard|spiral|pitchwheel)\([^)]*\)/g, ''));
+const slider = (v) => v;
+
+const editor = new StrudelMirror({
+  defaultOutput: webaudioOutput,
+  getTime: () => getAudioContext().currentTime,
+  transpiler,
+  root: $('editor'),
+  initialCode: '',
+  drawTime: [-2, 2],
+  drawContext,
+  bgFill: false,
+  autodraw: false,
+  prebake: async () => {
+    await evalScope(
+      import('@strudel/core'),
+      import('@strudel/mini'),
+      import('@strudel/edo'),
+      import('@strudel/tonal'),
+      import('@strudel/webaudio'),
+      import('@strudel/soundfonts'),
+      import('@strudel/draw'),
+      { slider },
+    );
+    await Promise.all([
+      registerSynthSounds(),
+      registerSoundfonts(),
+      samples(`${CDN}/piano.json`, `${CDN}/piano/`, { prebake: true }),
+      samples(`${CDN}/tidal-drum-machines.json`, `${CDN}/tidal-drum-machines/machines/`, { prebake: true, tag: 'drum-machines' }),
+    ]);
+    aliasBank(`${CDN}/tidal-drum-machines-alias.json`);
+    say('engine ready. pick a track, ctrl+enter to play.', 'ok');
+  },
+  beforeEval: () => ensureAudio(),
+  onToggle: (on) => setState(on),
+});
+// route the editor's own ctrl+enter through the visuals switch too
+editor.evaluate = async function (autostart = true) {
+  this.flash();
+  await this.repl.evaluate(stripVisuals(this.code), autostart);
+};
+editor.updateSettings({
+  ...codemirrorSettings.get(),
+  theme: 'strudelTheme',
+  fontSize: 15,
+  fontFamily: 'monospace',
+  isLineNumbersDisplayed: true,
+  isAutoCompletionEnabled: false,
+  isLineWrappingEnabled: false,
+  isPatternHighlightingEnabled: true,
+});
+
 nav.replaceChildren(
   ...tracks.map((t, i) => {
     const a = document.createElement('a');
@@ -100,38 +107,28 @@ nav.replaceChildren(
 );
 function load(i) {
   current = (i + tracks.length) % tracks.length;
-  code.value = tracks[current].code;
+  editor.setCode(tracks[current].code);
+  editor.setCursorLocation(0);
   [...nav.children].forEach((a, j) => a.classList.toggle('active', j === current));
   say(`loaded ${tracks[current].title}`, 'ok');
-  code.scrollTop = 0;
 }
 
 async function play() {
   try {
-    await ready;
-    await ensureAudio();
-    await evaluate(code.value);
-    setState(true);
+    await editor.evaluate();
   } catch (err) {
     say(`error: ${err.message}`, 'err');
   }
 }
 function stop() {
-  hush();
-  setState(false);
+  editor.stop();
 }
 
 $('play').onclick = play;
 $('stop').onclick = stop;
 window.addEventListener('keydown', (e) => {
   if (!(e.ctrlKey || e.metaKey)) return;
-  if (e.key === 'Enter') {
-    e.preventDefault();
-    play();
-  } else if (e.key === '.') {
-    e.preventDefault();
-    stop();
-  } else if (e.key === 'ArrowDown') {
+  if (e.key === 'ArrowDown') {
     e.preventDefault();
     load(current + 1);
   } else if (e.key === 'ArrowUp') {
@@ -147,4 +144,3 @@ window.addEventListener('keydown', (e) => {
 // #3 in the url opens the third track
 const pick = parseInt(location.hash.slice(1), 10);
 load(Number.isInteger(pick) && pick > 0 ? pick - 1 : 0);
-ready.then(() => say('engine ready. pick a track, ctrl+enter to play.', 'ok')).catch((e) => say(`init failed: ${e.message}`, 'err'));
