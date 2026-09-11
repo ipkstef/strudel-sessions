@@ -37,47 +37,59 @@ let stutterGate = "<0!10 [1|0|0|0|0]@2 0!4>"    // bars 11-12: vocal stutter rol
 // VOCAL
 // =====================================================================
 
-// main hook
-$: s("hook").slow(10).speed(.97).hpf(150).lpf(4500)
+// main hook — slow(20) so it lands ~3x across the form, and masked off for
+// intro (bars 1-8), breakdown (bars 33-40), and the final B (bars 57-64).
+// when it does arrive it's the only thing carrying the melody, so it hits.
+$: s("hook").slow(20).speed(.97).hpf(150).lpf(4500)
   .delay(.35).delaytime(.345).delayfeedback(.45)
   .room(.6).roomsize(6).gain(.85)
+  .mask("<0!8 1!24 0!8 0!8 1!16 0!8>")
 
-// octave-down ghost of the hook under it in the full sections: body without a new part
-$: s("hook").slow(10).speed(.485).lpf(1200).room(.8).roomsize(8).gain(.4).mask(full)
+// octave-down ghost — now the everyday presence instead of the full hook.
+// slower speed, lower gain, masks on the same A / A-prime zones so it
+// doesn't clutter the full hook when it lands.
+$: s("hook").slow(20).speed(.485).lpf(1200).room(.8).roomsize(8).gain(.32)
+  .mask("<0!8 1!16 0!8 1!8 1!8 1!16 0!8>")
 
-// a single word stuttered in the bar before the vocal comes round
+// word stutter in the bar before the vocal comes round — kept, but the mask
+// now only fires when the full hook is actually about to land
 $: s("hook").slice(16, "[~@4 3 ~ 3 ~ ~ 3 ~ ~]").cut(3).hpf(400).lpf(5000)
   .speed("<1 1 1 .5>").delay(.4).delaytime(.26).delayfeedback(.5).room(.5).roomsize(4)
-  .gain(.6).mask("<0!9 1>")
+  .gain(.55).mask("<0!19 1 0!19 1 0!23>")
 
-// breathy held note on the chord's 5th, pitched from the C sample
+// breathy held note — unchanged, sits under everything
 $: note("<[f#3 c#4 d4 e4]!6 [d4 e4 f#3 c#4]!2 [f#3 c#4 d4 e4]!6 [d4 e4 f#3 c#4]!2>/4")
   .s("ooh").clip(1).attack(.1).release(.3)
   .lpf(3000).room(.7).roomsize(6).gain(.4).pan(.6).orbit(2)
 
 // --- EXPANSION ---
 
-// harmony hook, a 5th up, quiet, rides the same 10-bar drift
-$: s("hook").slow(10).speed(1.455).hpf(400).lpf(3500)
-  .room(.8).roomsize(7).gain(.28).pan(.35)
-  .mask(full)
+// harmony hook — only rides alongside the full hook, so it inherits the
+// rarity automatically. same 5th-up interval.
+$: s("hook").slow(20).speed(1.455).hpf(400).lpf(3500)
+  .room(.8).roomsize(7).gain(.26).pan(.35)
+  .mask("<0!8 1!24 0!8 0!8 1!16 0!8>")
 
-// hook dry and close in the breakdown — lets the words breathe
-$: s("hook").slow(10).speed(.97).hpf(200).lpf(5500)
+// hook dry and close in the breakdown — unchanged, this is the *only* full
+// hook moment that's really exposed, so it earns the space
+$: s("hook").slow(20).speed(.97).hpf(200).lpf(5500)
   .room(.35).roomsize(3).gain(.7)
   .mask(breakdown)
 
-// echo throw — last 8th of every 4 bars, single word into the delay
+// echo throw — last 8th of every 4 bars. this does most of the "vocal is
+// present" work now, so bump it up slightly and let it fire more often.
 $: s("hook").slice(8, "~ ~ ~ ~ ~ ~ ~ 5").cut(2)
-  .hpf(500).lpf(4500).speed(1).gain(.55)
+  .hpf(500).lpf(4500).speed(1).gain(.6)
   .delay(.75).delaytime(.345).delayfeedback(.7)
   .room(.6).roomsize(6).mask("<0!3 1>")
 
-// vocal chop stab — short pitched syllable used as a rhythmic element (A and B only)
+// vocal chop stab — carry more of the texture now. widened to the whole A
+// and B zones and made slightly more frequent so the voice feels continuous
+// without the full hook ever having to play.
 $: s("hook").slice(16, "<~ ~ 7 ~ ~ 7 ~ ~ ~ 7 ~ ~ 7 ~ 7 ~>").cut(3)
   .speed(1.2).hpf(600).lpf(4000).clip(.4)
-  .room(.5).roomsize(4).gain(.35).pan(sine.slow(2).range(.4,.6))
-  .mask("<0!8 1!8 0!8 1!8 0!8 1!8 0!16>")
+  .room(.5).roomsize(4).gain(.38).pan(sine.slow(2).range(.4,.6))
+  .mask("<0!8 1!8 1!8 1!8 0!8 1!16 0!8>")
 
 // =====================================================================
 // BODY: keys + mid-bass
@@ -187,46 +199,44 @@ $: note(roots).struct("x ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~")
   .attack(.008).release(.12).clip(.9).gain(.5)
   .mask(full)
 
-// =====================================================================
 // DRUMS: SP-12 kit, small in A, opening up in the full sections
-// =====================================================================
-
 $: s("bd").beat("0,10", 16).bank("EmuSP12").gain(.95)
   .duck("2:3").duckdepth(".3:.15").duckattack(.12).mask(drums).mask(dropOff).mask(halfOff)
 $: s("sd").beat("4,12", 16).bank("EmuSP12").gain(.85).hpf(120).room(.2).roomsize(2).mask(drums).mask(dropOff).mask(halfOff)
 $: s("cp").beat("4,12", 16).bank("EmuSP12").gain(.3).hpf(600).room(.3).roomsize(3).mask(full).mask(dropOff).mask(halfOff)
 $: s("sd").beat("<14 [7,14]>", 16).bank("EmuSP12").gain(.2).speed(1.3).hpf(1000).mask(drums).mask(dropOff).mask(halfOff)
-$: s("hh*8").bank("EmuSP12").gain("[.4 .2]*4").mask(drums).mask(dropOff).mask(halfOff)
-$: s("oh").beat("14", 16).bank("EmuSP12").gain(.25).release(.1).mask(full).mask(dropOff).mask(halfOff)
+
+// hats + ride: thinned at the top of A' via skel
+$: s("hh*8").bank("EmuSP12").gain("[.4 .2]*4").mask(drums).mask(skel).mask(dropOff).mask(halfOff)
+$: s("oh").beat("14", 16).bank("EmuSP12").gain(.25).release(.1).mask(full).mask(skel).mask(dropOff).mask(halfOff)
+$: s("linnhats").n("<2 4>").beat("<~ 6 ~ [6,14]>", 16).gain(.25).pan(.7).mask(drums).mask(skel).mask(dropOff).mask(halfOff)
+
+// shaker + shaker-adjacent: kept through A' (the "skeleton" the section rests on)
 $: s("sh*16").bank("RolandTR808").gain("[.2 .1 .15 .1]*4").hpf(4000).pan(.4).mask(drums).mask(dropOff).mask(halfOff)
+
+// break + fills: thinned at the top of A'
 $: s("breaks165/2").fit().chop(16).cut(1).hpf(350).lpf(5000).gain(.3)
-  .lastOf(8, ply(2)).mask(full).mask(dropOff).mask(halfOff)
+  .lastOf(8, ply(2)).mask(full).mask(skel).mask(dropOff).mask(halfOff)
 $: s("sd*8").bank("EmuSP12").gain("[.3 .35 .4 .45 .5 .55 .6 .7]").speed(1.1).hpf(300)
-  .mask("<0!7 [0 1]>").mask("<1!8 1!16 1!8 0!8 1!16 1!8>")                 // roll into each 8 while drums are on
-$: s("linnhats").n("<2 4>").beat("<~ 6 ~ [6,14]>", 16).gain(.25).pan(.7).mask(drums).mask(dropOff).mask(halfOff)
+  .mask("<0!7 [0 1]>").mask("<1!8 1!16 1!8 0!8 1!16 1!8>")
+
+// transitions + FX: unchanged
 $: s("cr").bank("EmuSP12").gain(.4).room(.5).mask(hits)
 $: s("white").slow(4).attack(3).release(.3).lpf(saw.slow(4).range(300, 8000)).gain(.25)
-  .mask("<0!20 1!4 0!16 1!4 0!20>")                                       // risers into B and A'
+  .mask("<0!20 1!4 0!16 1!4 0!20>")
 
-// --- EXPANSION ---
-
-// rimshot / click on the "and" of 2
+// --- EXPANSION PERCUSSION (also narrowed by skel for consistency) ---
 $: s("sd").bank("EmuSP12").n(1).speed(1.8)
   .beat("2", 16).gain(.14).hpf(1200).pan(.4)
-  .room(.2).roomsize(2).mask(drums).mask(dropOff).mask(halfOff)
-
-// small hand-percussion figure at the end of 8-bar phrases
+  .room(.2).roomsize(2).mask(drums).mask(skel).mask(dropOff).mask(halfOff)
 $: s("hh").bank("EmuSP12").n("<0 2 3 2>")
   .struct("~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ x x x x")
   .gain(.2).hpf(800).pan(perlin.range(.5,.7))
-  .mask("<0!7 1>").mask(full).mask(dropOff).mask(halfOff)
-
-// sidestick shuffle in the B sections only
+  .mask("<0!7 1>").mask(full).mask(skel).mask(dropOff).mask(halfOff)
 $: s("sd").bank("EmuSP12").n(3).speed(2)
   .struct("~ ~ x ~ ~ x ~ ~ ~ ~ x ~ ~ x ~ ~")
   .gain(.12).hpf(900).pan(.6).room(.25).roomsize(2)
   .mask(sectionB)
-
 // =====================================================================
 // INTERLUDE LANES
 // =====================================================================
