@@ -1,114 +1,114 @@
-(function(){const t=document.createElement("link").relList;if(t&&t.supports&&t.supports("modulepreload"))return;for(const u of document.querySelectorAll('link[rel="modulepreload"]'))o(u);new MutationObserver(u=>{for(const l of u)if(l.type==="childList")for(const f of l.addedNodes)f.tagName==="LINK"&&f.rel==="modulepreload"&&o(f)}).observe(document,{childList:!0,subtree:!0});function a(u){const l={};return u.integrity&&(l.integrity=u.integrity),u.referrerPolicy&&(l.referrerPolicy=u.referrerPolicy),u.crossOrigin==="use-credentials"?l.credentials="include":u.crossOrigin==="anonymous"?l.credentials="omit":l.credentials="same-origin",l}function o(u){if(u.ep)return;u.ep=!0;const l=a(u);fetch(u.href,l)}})();const scriptRel="modulepreload",assetsURL=function(e,t){return new URL(e,t).href},seen={},__vitePreload=function(t,a,o){let u=Promise.resolve();if(a&&a.length>0){let f=function(b){return Promise.all(b.map(F=>Promise.resolve(F).then(k=>({status:"fulfilled",value:k}),k=>({status:"rejected",reason:k}))))};const p=document.getElementsByTagName("link"),g=document.querySelector("meta[property=csp-nonce]"),d=g?.nonce||g?.getAttribute("nonce");u=f(a.map(b=>{if(b=assetsURL(b,o),b in seen)return;seen[b]=!0;const F=b.endsWith(".css"),k=F?'[rel="stylesheet"]':"";if(!!o)for(let L=p.length-1;L>=0;L--){const N=p[L];if(N.href===b&&(!F||N.rel==="stylesheet"))return}else if(document.querySelector(`link[href="${b}"]${k}`))return;const R=document.createElement("link");if(R.rel=F?"stylesheet":scriptRel,F||(R.as="script"),R.crossOrigin="",R.href=b,d&&R.setAttribute("nonce",d),document.head.appendChild(R),F)return new Promise((L,N)=>{R.addEventListener("load",L),R.addEventListener("error",()=>N(new Error(`Unable to preload CSS for ${b}`)))})}))}function l(f){const p=new Event("vite:preloadError",{cancelable:!0});if(p.payload=f,window.dispatchEvent(p),!p.defaultPrevented)throw f}return u.then(f=>{for(const p of f||[])p.status==="rejected"&&l(p.reason);return t().catch(l)})},__vite_glob_0_0=`// "Half Past Dawn" @by Stefanos Amanuel\r
-// @genre liquid dnb\r
-// @version 1.0\r
-// @license CC BY-NC-SA 4.0\r
-// 174 bpm, F major. Calibre-ish: Amen slices played in order then mangled, piano, warm pad, choir oohs as the vocal.\r
-\r
-samples('github:tidalcycles/dirt-samples')\r
-setcpm(174/4)\r
-\r
-let chords = "<F^9 Am7 Dm9 Bb^7 Gm9 C9 Am7 Bb^7>/2"   // 8-bar loop, 2 bars per chord\r
-let roots  = "<f1 a1 d1 bb1 g1 c1 a1 bb1>/2"\r
-\r
-// DRUMS ------------------------------------------------------\r
-// the amen, sliced: 32 slices = 4 bars of 8ths. play it "in order" then mangle\r
-$: n("<[0 1 2 3 4 5 6 7] [8 9 10 11 12 13 14 15] [0 1 2 3 4 5 6 7] [24 25 26 27 28 29 30 31]>")\r
-  .s("amencutup").cut(1).speed(174/136)\r
-  .hpf(250).lpf(6000).gain(.5)\r
-  .lastOf(8, x => x.rev().ply("<2 1 2 4>"))       // roll into the next 8\r
-  .sometimesBy(.1, x => x.add(n(irand(8))))   // occasional wrong slice = human\r
-$: s("bd").beat("0,10", 16).bank("AkaiLinn").gain(1.05)\r
-  .duck("2:3").duckdepth(".5:.3").duckattack(.12)\r
-$: s("sd").beat("4,12", 16).bank("AkaiLinn").gain(.9).hpf(150).room(.2).roomsize(2)\r
-$: s("sh").beat("<[6,14] [6,9,14]>", 16).bank("AkaiLinn").gain(.45)   // shaker offbeats\r
-$: s("hh*16").bank("AkaiLinn").gain("[.5 .2 .35 .2]*4")\r
-  .degradeBy(.08).pan(perlin.range(.4,.6))\r
-\r
-// SUB -------------------------------------------------------\r
-$: note(roots).struct("x@6 x@2 ~@2 x@4 ~ x")\r
-  .s("sine").shape(.2).lpf(200)\r
-  .attack(.004).release(.06).clip(.9).gain(.9)\r
-  ._scope()\r
-\r
-// PIANO ------------------------------------------------------\r
-$: chord(chords).anchor("g5").voicing()\r
-  .struct("<[x ~ ~ ~ ~ ~ ~ ~ x ~ ~ ~ ~ ~ ~ ~] [x ~ ~ x ~ ~ x ~ ~ x ~ ~ x ~ ~ ~]>")\r
-  .s("piano").velocity("<.6 .7 .55 .65>").clip(.8)\r
-  .delay(.3).delaytime(.345).delayfeedback(.35)\r
-  .room(.55).roomsize(4).gain(.75).orbit(3)\r
-  ._pianoroll()\r
-\r
-// WARM PAD (orbit 2) ----------------------------------------\r
-$: chord(chords).anchor("c5").voicing()\r
-  .s("gm_pad_warm").attack(.8).release(1.5).clip(1)\r
-  .lpf(sine.slow(32).range(400,1400))\r
-  .room(.9).roomsize(8).gain(.35).orbit(2)\r
-\r
-// "VOCAL": choir oohs on the top note, pitched, chopped (orbit 2)\r
-$: chord(chords).voicing().arp("3 ~ ~ 2 ~ 3 ~ ~").transpose(12)\r
-  .s("gm_voice_oohs").attack(.05).release(.4).clip(.7)\r
-  .vowel("<o a e o>").velocity(.5)\r
-  .delay(.5).delaytime(.69).delayfeedback(.55)\r
-  .room(.7).roomsize(6).gain(.5).orbit(2)\r
-  .degradeBy(.3).sometimesBy(.2, x => x.speed(2))\r
-\r
-// AIR ----------------------------------------------------------\r
-$: s("crackle").density(.03).gain(.12).hpf(1500)\r
-$: s("birds").n("<2 6>").slow(8).gain(.15).hpf(2000).room(.8).roomsize(8).pan(.7)\r
-\r
-// ============ EXPANSION LAYERS ============\r
-\r
-// Ghost snares\r
-$: s("sd").bank("AkaiLinn").n(2)\r
-  .struct("~ x ~ ~ ~ ~ x ~ ~ x ~ ~ x ~ x ~")\r
-  .gain(.16).hpf(300).pan(.45).room(.18).roomsize(2)\r
-  .degradeBy(.35)\r
-\r
-// Ride / open hats\r
-$: s("hh").bank("AkaiLinn")\r
-  .beat("2,6,10,14", 16)\r
-  .gain(.22).hpf(6500).pan(perlin.range(.55,.7))\r
-  .room(.25).roomsize(2).orbit(1)\r
-\r
-// Rhodes comping\r
-$: chord(chords).anchor("e5").voicing()\r
-  .struct("~ x ~ ~ ~ ~ x ~ ~ x ~ ~ ~ ~ x ~")\r
-  .s("gm_epiano1").velocity("<.5 .55 .45 .6>").clip(.9)\r
-  .lpf(sine.slow(16).range(1800, 3500))\r
-  .room(.5).roomsize(3).gain(.4).orbit(3)\r
-\r
-// Strings sustain\r
-$: chord(chords).anchor("f5").voicing()\r
-  .s("gm_string_ensemble_1").attack(1.2).release(2).clip(1)\r
-  .lpf(2200).room(.85).roomsize(7).gain(.22).orbit(2)\r
-\r
-// Mid bass\r
-$: note(roots).struct("~ ~ x ~ ~ ~ x ~ ~ ~ x ~ ~ ~ x ~")\r
-  .s("sawtooth").lpf(500).lpq(6).attack(.01).release(.15).clip(.8)\r
-  .gain(.18).room(.15).orbit(1)\r
-\r
-// Rhodes counter-melody\r
-$: note("<f5 g5 a5 c6 a5 g5 f5 e5>/2")\r
-  .struct("~ x ~ ~ x ~ ~ x ~ ~ x ~ ~ x ~ ~")\r
-  .s("gm_epiano1").clip(.6).velocity(.45)\r
-  .delay(.4).delaytime(.345).delayfeedback(.4)\r
-  .room(.6).roomsize(4).gain(.3).orbit(3)\r
-\r
-// Choir harmony\r
-// Choir harmony\r
-$: chord(chords).voicing().arp("~ 2 ~ 3 ~ 2 ~ ~").transpose(19)\r
-  .s("gm_voice_oohs").attack(.1).release(.5).clip(.8)\r
-  .vowel("<a o e a>").velocity(.35)\r
-  .delay(.45).delaytime(.345).delayfeedback(.45)\r
-  .room(.75).roomsize(6).gain(.35).orbit(2)\r
-  .degradeBy(.45)\r
-\r
-// Riser\r
-$: s("sd").bank("AkaiLinn")\r
-  .struct("~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ x")\r
-  .speed(saw.slow(8).range(1, 4))\r
-  .hpf(saw.slow(8).range(500, 8000))\r
-  .gain(.3).room(.8).roomsize(8)\r
+(function(){const t=document.createElement("link").relList;if(t&&t.supports&&t.supports("modulepreload"))return;for(const u of document.querySelectorAll('link[rel="modulepreload"]'))o(u);new MutationObserver(u=>{for(const l of u)if(l.type==="childList")for(const f of l.addedNodes)f.tagName==="LINK"&&f.rel==="modulepreload"&&o(f)}).observe(document,{childList:!0,subtree:!0});function a(u){const l={};return u.integrity&&(l.integrity=u.integrity),u.referrerPolicy&&(l.referrerPolicy=u.referrerPolicy),u.crossOrigin==="use-credentials"?l.credentials="include":u.crossOrigin==="anonymous"?l.credentials="omit":l.credentials="same-origin",l}function o(u){if(u.ep)return;u.ep=!0;const l=a(u);fetch(u.href,l)}})();const scriptRel="modulepreload",assetsURL=function(e,t){return new URL(e,t).href},seen={},__vitePreload=function(t,a,o){let u=Promise.resolve();if(a&&a.length>0){let f=function(b){return Promise.all(b.map(F=>Promise.resolve(F).then(k=>({status:"fulfilled",value:k}),k=>({status:"rejected",reason:k}))))};const p=document.getElementsByTagName("link"),g=document.querySelector("meta[property=csp-nonce]"),d=g?.nonce||g?.getAttribute("nonce");u=f(a.map(b=>{if(b=assetsURL(b,o),b in seen)return;seen[b]=!0;const F=b.endsWith(".css"),k=F?'[rel="stylesheet"]':"";if(!!o)for(let L=p.length-1;L>=0;L--){const N=p[L];if(N.href===b&&(!F||N.rel==="stylesheet"))return}else if(document.querySelector(`link[href="${b}"]${k}`))return;const R=document.createElement("link");if(R.rel=F?"stylesheet":scriptRel,F||(R.as="script"),R.crossOrigin="",R.href=b,d&&R.setAttribute("nonce",d),document.head.appendChild(R),F)return new Promise((L,N)=>{R.addEventListener("load",L),R.addEventListener("error",()=>N(new Error(`Unable to preload CSS for ${b}`)))})}))}function l(f){const p=new Event("vite:preloadError",{cancelable:!0});if(p.payload=f,window.dispatchEvent(p),!p.defaultPrevented)throw f}return u.then(f=>{for(const p of f||[])p.status==="rejected"&&l(p.reason);return t().catch(l)})},__vite_glob_0_0=`// "Half Past Dawn" @by Stefanos Amanuel
+// @genre liquid dnb
+// @version 1.0
+// @license CC BY-NC-SA 4.0
+// 174 bpm, F major. Calibre-ish: Amen slices played in order then mangled, piano, warm pad, choir oohs as the vocal.
+
+samples('github:tidalcycles/dirt-samples')
+setcpm(174/4)
+
+let chords = "<F^9 Am7 Dm9 Bb^7 Gm9 C9 Am7 Bb^7>/2"   // 8-bar loop, 2 bars per chord
+let roots  = "<f1 a1 d1 bb1 g1 c1 a1 bb1>/2"
+
+// DRUMS ------------------------------------------------------
+// the amen, sliced: 32 slices = 4 bars of 8ths. play it "in order" then mangle
+$: n("<[0 1 2 3 4 5 6 7] [8 9 10 11 12 13 14 15] [0 1 2 3 4 5 6 7] [24 25 26 27 28 29 30 31]>")
+  .s("amencutup").cut(1).speed(174/136)
+  .hpf(250).lpf(6000).gain(.5)
+  .lastOf(8, x => x.rev().ply("<2 1 2 4>"))       // roll into the next 8
+  .sometimesBy(.1, x => x.add(n(irand(8))))   // occasional wrong slice = human
+$: s("bd").beat("0,10", 16).bank("AkaiLinn").gain(1.05)
+  .duck("2:3").duckdepth(".5:.3").duckattack(.12)
+$: s("sd").beat("4,12", 16).bank("AkaiLinn").gain(.9).hpf(150).room(.2).roomsize(2)
+$: s("sh").beat("<[6,14] [6,9,14]>", 16).bank("AkaiLinn").gain(.45)   // shaker offbeats
+$: s("hh*16").bank("AkaiLinn").gain("[.5 .2 .35 .2]*4")
+  .degradeBy(.08).pan(perlin.range(.4,.6))
+
+// SUB -------------------------------------------------------
+$: note(roots).struct("x@6 x@2 ~@2 x@4 ~ x")
+  .s("sine").shape(.2).lpf(200)
+  .attack(.004).release(.06).clip(.9).gain(.9)
+  ._scope()
+
+// PIANO ------------------------------------------------------
+$: chord(chords).anchor("g5").voicing()
+  .struct("<[x ~ ~ ~ ~ ~ ~ ~ x ~ ~ ~ ~ ~ ~ ~] [x ~ ~ x ~ ~ x ~ ~ x ~ ~ x ~ ~ ~]>")
+  .s("piano").velocity("<.6 .7 .55 .65>").clip(.8)
+  .delay(.3).delaytime(.345).delayfeedback(.35)
+  .room(.55).roomsize(4).gain(.75).orbit(3)
+  ._pianoroll()
+
+// WARM PAD (orbit 2) ----------------------------------------
+$: chord(chords).anchor("c5").voicing()
+  .s("gm_pad_warm").attack(.8).release(1.5).clip(1)
+  .lpf(sine.slow(32).range(400,1400))
+  .room(.9).roomsize(8).gain(.35).orbit(2)
+
+// "VOCAL": choir oohs on the top note, pitched, chopped (orbit 2)
+$: chord(chords).voicing().arp("3 ~ ~ 2 ~ 3 ~ ~").transpose(12)
+  .s("gm_voice_oohs").attack(.05).release(.4).clip(.7)
+  .vowel("<o a e o>").velocity(.5)
+  .delay(.5).delaytime(.69).delayfeedback(.55)
+  .room(.7).roomsize(6).gain(.5).orbit(2)
+  .degradeBy(.3).sometimesBy(.2, x => x.speed(2))
+
+// AIR ----------------------------------------------------------
+$: s("crackle").density(.03).gain(.12).hpf(1500)
+$: s("birds").n("<2 6>").slow(8).gain(.15).hpf(2000).room(.8).roomsize(8).pan(.7)
+
+// ============ EXPANSION LAYERS ============
+
+// Ghost snares
+$: s("sd").bank("AkaiLinn").n(2)
+  .struct("~ x ~ ~ ~ ~ x ~ ~ x ~ ~ x ~ x ~")
+  .gain(.16).hpf(300).pan(.45).room(.18).roomsize(2)
+  .degradeBy(.35)
+
+// Ride / open hats
+$: s("hh").bank("AkaiLinn")
+  .beat("2,6,10,14", 16)
+  .gain(.22).hpf(6500).pan(perlin.range(.55,.7))
+  .room(.25).roomsize(2).orbit(1)
+
+// Rhodes comping
+$: chord(chords).anchor("e5").voicing()
+  .struct("~ x ~ ~ ~ ~ x ~ ~ x ~ ~ ~ ~ x ~")
+  .s("gm_epiano1").velocity("<.5 .55 .45 .6>").clip(.9)
+  .lpf(sine.slow(16).range(1800, 3500))
+  .room(.5).roomsize(3).gain(.4).orbit(3)
+
+// Strings sustain
+$: chord(chords).anchor("f5").voicing()
+  .s("gm_string_ensemble_1").attack(1.2).release(2).clip(1)
+  .lpf(2200).room(.85).roomsize(7).gain(.22).orbit(2)
+
+// Mid bass
+$: note(roots).struct("~ ~ x ~ ~ ~ x ~ ~ ~ x ~ ~ ~ x ~")
+  .s("sawtooth").lpf(500).lpq(6).attack(.01).release(.15).clip(.8)
+  .gain(.18).room(.15).orbit(1)
+
+// Rhodes counter-melody
+$: note("<f5 g5 a5 c6 a5 g5 f5 e5>/2")
+  .struct("~ x ~ ~ x ~ ~ x ~ ~ x ~ ~ x ~ ~")
+  .s("gm_epiano1").clip(.6).velocity(.45)
+  .delay(.4).delaytime(.345).delayfeedback(.4)
+  .room(.6).roomsize(4).gain(.3).orbit(3)
+
+// Choir harmony
+// Choir harmony
+$: chord(chords).voicing().arp("~ 2 ~ 3 ~ 2 ~ ~").transpose(19)
+  .s("gm_voice_oohs").attack(.1).release(.5).clip(.8)
+  .vowel("<a o e a>").velocity(.35)
+  .delay(.45).delaytime(.345).delayfeedback(.45)
+  .room(.75).roomsize(6).gain(.35).orbit(2)
+  .degradeBy(.45)
+
+// Riser
+$: s("sd").bank("AkaiLinn")
+  .struct("~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ x")
+  .speed(saw.slow(8).range(1, 4))
+  .hpf(saw.slow(8).range(500, 8000))
+  .gain(.3).room(.8).roomsize(8)
 `,__vite_glob_0_1=`// "Liquid Toolbox" @by Stefanos Amanuel
 // @genre liquid dnb
 // @version 1.0
@@ -189,295 +189,295 @@ $: s("birds").n("<2 6>").slow(8).gain(.15).hpf(2000).room(.8).roomsize(8)
 // half-time switch-up:                .lastOf(16, x => x.slow(2))
 // reset/glitch into the drop:         .reset("<x@30 [x*[8 16]]@2>")   (from froos)
 // swing the hats a hair:              s("hh*16").swingBy(1/24, 8)
-`,__vite_glob_0_2=`// "Low Tide Radio" @by Stefanos Amanuel\r
-// @genre liquid dnb, vocal\r
-// @version 1.3\r
-// @license CC BY-NC-SA 4.0\r
-// 172 bpm, B minor. Vocal-led: a CC0 sung hook in D major carries the song and comes round\r
-// every 10 bars so it drifts against the 8-bar sections. 64-bar form:\r
-// 8 intro / 16 A / 8 B (lifted chords + lead line) / 8 breakdown / 16 A-prime / 8 B outro.\r
-// Three 2-bar interludes (drums-out reversed vocal, halftime, vocal stutter roll) each roll\r
-// a 1-in-5 chance at their slot in every 16 bars.\r
-\r
-samples('github:tidalcycles/dirt-samples')\r
-samples({\r
-  hook: 'https://cdn.freesound.org/previews/645/645479_12449013-lq.mp3',           // sung female hook in D major, CC0\r
-  ooh:  { c4: 'https://cdn.freesound.org/previews/727/727703_1690102-lq.mp3' },   // one breathy sung C, CC0 (owstu)\r
-})\r
-setcpm(172/4)\r
-\r
-// A = Bm7 F#m7 G^7 A (i v VI VII)   B = G^7 A Bm7 F#m7 (same chords, lifted order)\r
-let chords = "<[Bm7 F#m7 G^7 A]!6 [G^7 A Bm7 F#m7]!2 [Bm7 F#m7 G^7 A]!6 [G^7 A Bm7 F#m7]!2>/4"\r
-let roots  = "<[b1 f#1 g1 a1]!6 [g1 a1 b1 f#1]!2 [b1 f#1 g1 a1]!6 [g1 a1 b1 f#1]!2>/4"\r
-let drums     = "<0!8 1!24 0!8 1!24>"\r
-let full      = "<0!24 1!8 0!8 1!24>"      // B, A', B2\r
-let sectionB  = "<0!24 1!8 0!24 1!8>"\r
-let aPrime    = "<0!40 1!16 0!8>"\r
-let breakdown = "<0!32 1!8 0!24>"\r
-let hits      = "<0!24 1 0!15 1 0!15 1 0!7>"\r
-let skel      = "<1!4 0!36 1!16 0!8>"      // sparse skeleton for the top of A'\r
-// INTERLUDES: each has a 1-in-5 roll at its slot in every 16 bars. the "Off" twins are the\r
-// same roll with the answers swapped, so they always agree with their gate.\r
-let dropGate    = "<0!14 [1|0|0|0|0]@2>"        // bars 15-16 of each 16: drums vanish, vocal runs backwards\r
-let dropOff     = "<1!14 [0|1|1|1|1]@2>"\r
-let halfGate    = "<0!6 [1|0|0|0|0]@2 0!8>"     // bars 7-8: halftime\r
-let halfOff     = "<1!6 [0|1|1|1|1]@2 1!8>"\r
-let stutterGate = "<0!10 [1|0|0|0|0]@2 0!4>"    // bars 11-12: vocal stutter roll\r
-\r
-// =====================================================================\r
-// VOCAL\r
-// =====================================================================\r
-\r
-// main hook — slow(20) so it lands ~3x across the form, and masked off for\r
-// intro (bars 1-8), breakdown (bars 33-40), and the final B (bars 57-64).\r
-// when it does arrive it's the only thing carrying the melody, so it hits.\r
-$: s("hook").slow(20).speed(.97).hpf(150).lpf(4500)\r
-  .delay(.35).delaytime(.345).delayfeedback(.45)\r
-  .room(.6).roomsize(6).gain(.85)\r
-  .mask("<0!8 1!24 0!8 0!8 1!16 0!8>")\r
-\r
-// octave-down ghost — now the everyday presence instead of the full hook.\r
-// slower speed, lower gain, masks on the same A / A-prime zones so it\r
-// doesn't clutter the full hook when it lands.\r
-$: s("hook").slow(20).speed(.485).lpf(1200).room(.8).roomsize(8).gain(.32)\r
-  .mask("<0!8 1!16 0!8 1!8 1!8 1!16 0!8>")\r
-\r
-// word stutter in the bar before the vocal comes round — kept, but the mask\r
-// now only fires when the full hook is actually about to land\r
-$: s("hook").slice(16, "[~@4 3 ~ 3 ~ ~ 3 ~ ~]").cut(3).hpf(400).lpf(5000)\r
-  .speed("<1 1 1 .5>").delay(.4).delaytime(.26).delayfeedback(.5).room(.5).roomsize(4)\r
-  .gain(.55).mask("<0!19 1 0!19 1 0!23>")\r
-\r
-// breathy held note — unchanged, sits under everything\r
-$: note("<[f#3 c#4 d4 e4]!6 [d4 e4 f#3 c#4]!2 [f#3 c#4 d4 e4]!6 [d4 e4 f#3 c#4]!2>/4")\r
-  .s("ooh").clip(1).attack(.1).release(.3)\r
-  .lpf(3000).room(.7).roomsize(6).gain(.4).pan(.6).orbit(2)\r
-\r
-// --- EXPANSION ---\r
-\r
-// harmony hook — only rides alongside the full hook, so it inherits the\r
-// rarity automatically. same 5th-up interval.\r
-$: s("hook").slow(20).speed(1.455).hpf(400).lpf(3500)\r
-  .room(.8).roomsize(7).gain(.26).pan(.35)\r
-  .mask("<0!8 1!24 0!8 0!8 1!16 0!8>")\r
-\r
-// hook dry and close in the breakdown — unchanged, this is the *only* full\r
-// hook moment that's really exposed, so it earns the space\r
-$: s("hook").slow(20).speed(.97).hpf(200).lpf(5500)\r
-  .room(.35).roomsize(3).gain(.7)\r
-  .mask(breakdown)\r
-\r
-// echo throw — last 8th of every 4 bars. this does most of the "vocal is\r
-// present" work now, so bump it up slightly and let it fire more often.\r
-$: s("hook").slice(8, "~ ~ ~ ~ ~ ~ ~ 5").cut(2)\r
-  .hpf(500).lpf(4500).speed(1).gain(.6)\r
-  .delay(.75).delaytime(.345).delayfeedback(.7)\r
-  .room(.6).roomsize(6).mask("<0!3 1>")\r
-\r
-// vocal chop stab — carry more of the texture now. widened to the whole A\r
-// and B zones and made slightly more frequent so the voice feels continuous\r
-// without the full hook ever having to play.\r
-$: s("hook").slice(16, "<~ ~ 7 ~ ~ 7 ~ ~ ~ 7 ~ ~ 7 ~ 7 ~>").cut(3)\r
-  .speed(1.2).hpf(600).lpf(4000).clip(.4)\r
-  .room(.5).roomsize(4).gain(.38).pan(sine.slow(2).range(.4,.6))\r
-  .mask("<0!8 1!8 1!8 1!8 0!8 1!16 0!8>")\r
-\r
-// =====================================================================\r
-// BODY: keys + mid-bass\r
-// =====================================================================\r
-\r
-$: chord(chords).anchor("g4").voicing().s("gm_epiano2")\r
-  .struct("x ~@7 x ~@7").attack(.02).clip(1).velocity("<.5 .55 .5 .6>")\r
-  .lpf(2200).room(.5).roomsize(4).gain(.55).orbit(3).mask("<0!8 1!56>")\r
-\r
-$: note(roots).add(note(12)).struct("x@10 x@2 x@4")\r
-  .s("sawtooth").superimpose(x => x.add(note(.12)))\r
-  .lpf(sine.slow(8).range(300, 550)).clip(.9).release(.05).gain(.2).orbit(3).mask(full)\r
-\r
-// --- EXPANSION ---\r
-\r
-// rhodes ghost — octave-down e-piano, sparse, under the main keys\r
-$: chord(chords).anchor("d4").voicing().s("gm_epiano1")\r
-  .struct("~ x ~ ~ ~ ~ ~ ~ ~ x ~ ~ ~ ~ x ~")\r
-  .attack(.05).clip(1.4).velocity(.35)\r
-  .lpf(sine.slow(16).range(1400, 2600))\r
-  .room(.65).roomsize(5).gain(.4).orbit(3)\r
-  .mask("<0!8 1!56>")\r
-\r
-// bell / glock accents — single high note marking the chord change\r
-$: note("<[f#6 ~ ~ ~] [c#6 ~ ~ ~] [b5 ~ ~ ~] [a5 ~ ~ ~]>")\r
-  .s("triangle").attack(.005).clip(.6).release(.4)\r
-  .delay(.5).delaytime(.52).delayfeedback(.55)\r
-  .room(.75).roomsize(6).gain(.22).pan(.55).orbit(2)\r
-  .mask("<0!8 1!24 0!8 1!24>")\r
-\r
-// reverse swell — pad tail run backwards into each section change\r
-$: chord(chords).anchor("a4").voicing().s("gm_pad_sweep")\r
-  .attack(.01).release(.01).clip(1).speed(-1)\r
-  .lpf(1800).room(.9).roomsize(8).gain(.22).orbit(2)\r
-  .mask("<0!7 1 0!23 1 0!7 1 0!23 1>")\r
-\r
-// mid-bass passing tone between roots in A'\r
-$: note("<[b1 ~ ~ ~ f#1 ~ ~ ~ g1 ~ ~ ~ a1 ~ ~ ~] [g1 ~ ~ ~ a1 ~ ~ ~ b1 ~ ~ ~ f#1 ~ ~ ~]>")\r
-  .struct("~ ~ ~ ~ x ~ ~ ~ ~ ~ ~ ~ x ~ ~ ~")\r
-  .s("sawtooth").lpf(420).lpq(4).attack(.01).release(.1).clip(.7)\r
-  .gain(.16).room(.15).orbit(3)\r
-  .mask(aPrime)\r
-\r
-// =====================================================================\r
-// PLUCK / LEAD\r
-// =====================================================================\r
-\r
-// pluck: chord tones in 8ths (A)\r
-$: note("<[b4 ~ d5 ~ f#5 ~ d5 ~] [a4 ~ c#5 ~ e5 ~ c#5 ~] [b4 ~ d5 ~ g5 ~ d5 ~] [a4 ~ c#5 ~ e5 ~ a5 ~]>")\r
-  .s("sawtooth").lpf(1800).lpenv(2.5).lpa(.002).lpd(.1).lps(0)\r
-  .clip(.35).release(.12).velocity(.6)\r
-  .delay(.45).delaytime(.345).delayfeedback(.5)\r
-  .room(.4).roomsize(4).gain(.4).pan(sine.slow(4).range(.35,.65)).orbit(3)\r
-  .mask("<1!40 0!16 1!8>")\r
-  ._pianoroll()\r
-\r
-// pluck: busier 16ths in A'\r
-$: note("<[b4 d5 f#5 d5 b4 d5 f#5 a5 b4 d5 f#5 d5 b4 d5 a5 f#5] [a4 c#5 e5 c#5 a4 c#5 e5 g5 a4 c#5 e5 c#5 a4 e5 c#5 a4] [b4 d5 g5 d5 b4 d5 g5 b5 b4 d5 g5 d5 b4 g5 d5 b4] [a4 c#5 e5 c#5 a4 c#5 e5 a5 a4 c#5 e5 c#5 a4 a5 e5 c#5]>")\r
-  .s("sawtooth").lpf(2200).lpenv(2).lpa(.002).lpd(.08).lps(0)\r
-  .clip(.3).release(.1).velocity("[.6 .35 .45 .35]*4")\r
-  .delay(.35).delaytime(.26).delayfeedback(.4)\r
-  .room(.4).roomsize(4).gain(.35).pan(sine.slow(3).range(.3,.7)).orbit(3)\r
-  .mask(aPrime)\r
-\r
-// answer figure, top voice, second half of every 4 bars (A sections only)\r
-$: note("<[~@6 f#5 e5] [~@6 e5 d5] [~@4 d5 ~ b4 ~] [~@6 c#5 b4]>")\r
-  .s("triangle").attack(.01).clip(.8).release(.2).velocity(.6)\r
-  .delay(.5).delaytime(.52).delayfeedback(.5).room(.6).roomsize(5).gain(.45).orbit(3)\r
-  .mask("<0 0 1 1>").mask("<1!24 0!8 1!24 0!8>")\r
-\r
-// lead for the B sections: written line over G A Bm F#m\r
-$: note("<[~ d5 e5 f#5 ~ e5 d5 ~] [e5@3 c#5 e5@2 ~@2] [f#5 ~ d5 ~ b4@4] [~@8] [~ d5 e5 f#5 ~ g5 f#5 ~] [e5@2 ~ c#5 e5@2 a5@2] [f#5@2 d5@2 b4@4] [c#5@4 ~@4]>/1")\r
-  .s("sawtooth").lpf(1400).lpq(1.5).vib("5:.05").attack(.02).clip(.9).release(.25).velocity(.6)\r
-  .delay(.4).delaytime(.345).delayfeedback(.45).room(.6).roomsize(5).gain(.42).orbit(3)\r
-  .mask(sectionB)\r
-\r
-// solo lead for the breakdown — simple rising line, answers the vocal\r
-$: note("<[~ b4 c#5 d5 ~ c#5 b4 ~] [~ a4 b4 c#5 ~ b4 a4 ~] [~ g4 a4 b4 ~ a4 g4 ~] [~ f#4 g4 a4 ~@4]>")\r
-  .s("triangle").attack(.02).clip(.9).release(.4).velocity(.45)\r
-  .delay(.55).delaytime(.52).delayfeedback(.55)\r
-  .room(.8).roomsize(7).gain(.35).pan(sine.slow(4).range(.4,.6)).orbit(3)\r
-  .mask(breakdown)\r
-\r
-// =====================================================================\r
-// PADS\r
-// =====================================================================\r
-\r
-$: chord(chords).anchor("d4").voicing().s("gm_pad_sweep")\r
-  .attack(.8).release(1.5).clip(1).lpf("<900!32 1800!8 900!24>").coarse(2)\r
-  .room(.8).roomsize(6).gain(.28).orbit(2)\r
-\r
-$: chord(chords).anchor("a4").voicing().s("supersaw").detune(.3)\r
-  .attack(.6).release(1.2).clip(1).lpf(perlin.slow(8).range(700, 1500))\r
-  .room(.7).roomsize(6).gain(".22 .26").orbit(2).mask(full)\r
-\r
-// =====================================================================\r
-// SUB\r
-// =====================================================================\r
-\r
-$: note(roots).struct("x@10 x@2 x@4").add(note("0 12 0"))\r
-  .s("sine").shape(.2).lpf(180).attack(.005).release(.1).clip(.95).gain(.85)\r
-  ._scope()\r
-\r
-// ghost octave below the sub on the 1 of each bar\r
-$: note(roots).struct("x ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~")\r
-  .add(note(-12)).s("sine").lpf(120).shape(.3)\r
-  .attack(.008).release(.12).clip(.9).gain(.5)\r
-  .mask(full)\r
-\r
-// DRUMS: SP-12 kit, small in A, opening up in the full sections\r
-$: s("bd").beat("0,10", 16).bank("EmuSP12").gain(.95)\r
-  .duck("2:3").duckdepth(".3:.15").duckattack(.12).mask(drums).mask(dropOff).mask(halfOff)\r
-$: s("sd").beat("4,12", 16).bank("EmuSP12").gain(.85).hpf(120).room(.2).roomsize(2).mask(drums).mask(dropOff).mask(halfOff)\r
-$: s("cp").beat("4,12", 16).bank("EmuSP12").gain(.3).hpf(600).room(.3).roomsize(3).mask(full).mask(dropOff).mask(halfOff)\r
-$: s("sd").beat("<14 [7,14]>", 16).bank("EmuSP12").gain(.2).speed(1.3).hpf(1000).mask(drums).mask(dropOff).mask(halfOff)\r
-\r
-// hats + ride: thinned at the top of A' via skel\r
-$: s("hh*8").bank("EmuSP12").gain("[.4 .2]*4").mask(drums).mask(skel).mask(dropOff).mask(halfOff)\r
-$: s("oh").beat("14", 16).bank("EmuSP12").gain(.25).release(.1).mask(full).mask(skel).mask(dropOff).mask(halfOff)\r
-$: s("linnhats").n("<2 4>").beat("<~ 6 ~ [6,14]>", 16).gain(.25).pan(.7).mask(drums).mask(skel).mask(dropOff).mask(halfOff)\r
-\r
-// shaker + shaker-adjacent: kept through A' (the "skeleton" the section rests on)\r
-$: s("sh*16").bank("RolandTR808").gain("[.2 .1 .15 .1]*4").hpf(4000).pan(.4).mask(drums).mask(dropOff).mask(halfOff)\r
-\r
-// break + fills: thinned at the top of A'\r
-$: s("breaks165/2").fit().chop(16).cut(1).hpf(350).lpf(5000).gain(.3)\r
-  .lastOf(8, ply(2)).mask(full).mask(skel).mask(dropOff).mask(halfOff)\r
-$: s("sd*8").bank("EmuSP12").gain("[.3 .35 .4 .45 .5 .55 .6 .7]").speed(1.1).hpf(300)\r
-  .mask("<0!7 [0 1]>").mask("<1!8 1!16 1!8 0!8 1!16 1!8>")\r
-\r
-// transitions + FX: unchanged\r
-$: s("cr").bank("EmuSP12").gain(.4).room(.5).mask(hits)\r
-$: s("white").slow(4).attack(3).release(.3).lpf(saw.slow(4).range(300, 8000)).gain(.25)\r
-  .mask("<0!20 1!4 0!16 1!4 0!20>")\r
-\r
-// --- EXPANSION PERCUSSION (also narrowed by skel for consistency) ---\r
-$: s("sd").bank("EmuSP12").n(1).speed(1.8)\r
-  .beat("2", 16).gain(.14).hpf(1200).pan(.4)\r
-  .room(.2).roomsize(2).mask(drums).mask(skel).mask(dropOff).mask(halfOff)\r
-$: s("hh").bank("EmuSP12").n("<0 2 3 2>")\r
-  .struct("~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ x x x x")\r
-  .gain(.2).hpf(800).pan(perlin.range(.5,.7))\r
-  .mask("<0!7 1>").mask(full).mask(skel).mask(dropOff).mask(halfOff)\r
-$: s("sd").bank("EmuSP12").n(3).speed(2)\r
-  .struct("~ ~ x ~ ~ x ~ ~ ~ ~ x ~ ~ x ~ ~")\r
-  .gain(.12).hpf(900).pan(.6).room(.25).roomsize(2)\r
-  .mask(sectionB)\r
-// =====================================================================\r
-// INTERLUDE LANES\r
-// =====================================================================\r
-\r
-// drop: the hook runs backwards through a big room while the drums are gone\r
-$: s("hook").slow(2).speed(-.97).lpf(2500).room(.9).roomsize(9).gain(.7).mask(dropGate)\r
-$: chord(chords).anchor("e5").voicing().s("supersaw").detune(.4).attack(.3).clip(1)\r
-  .lpf(2500).room(.9).roomsize(8).gain(.3).orbit(2).mask(dropGate)\r
-\r
-// halftime: kick on 1, snare on 3, sub holds, nothing else\r
-$: s("bd").beat("0", 16).bank("EmuSP12").gain(1).mask(halfGate)\r
-$: s("sd").beat("8", 16).bank("EmuSP12").gain(.9).room(.5).roomsize(5).mask(halfGate)\r
-$: s("hook").slice(16, "[3 ~@7 ~@8]").speed(.5).lpf(2000).room(.8).roomsize(6).gain(.5).mask(halfGate)\r
-\r
-// stutter: one word rolls faster and faster into the next bar, snare roll under it\r
-$: s("hook").slice(16, "<[3 3 3 3 3*2 3*2 3*4 3*4] [3*8 3*8 3*16 3*16]>").cut(3)\r
-  .hpf(400).lpf(6000).pan(sine.fast(2).range(.3,.7)).gain(.6).mask(stutterGate)\r
-$: s("sd*16").bank("EmuSP12").gain(saw.slow(2).range(.2,.6)).speed(1.15).hpf(400).mask(stutterGate)\r
-\r
-// --- EXPANSION ---\r
-\r
-// dub delay send — vocal fires into the drop\r
-$: s("hook").slice(16, "~@14 7 ~").cut(3)\r
-  .hpf(600).lpf(3500).speed(.97).gain(.6)\r
-  .delay(.85).delaytime(.69).delayfeedback(.75).room(.9).roomsize(9)\r
-  .mask(dropGate)\r
-\r
-// noise rise into each B\r
-$: s("white").slow(8).attack(4).release(.2)\r
-  .bpf(saw.slow(8).range(400, 6000)).bpq(8)\r
-  .gain(.18).room(.7).roomsize(7)\r
-  .mask("<0!23 1 0!15 1 0!23 1>")\r
-\r
-// impact / sub drop on the first beat of B and A-prime\r
-$: note("b0").struct("x ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~")\r
-  .s("sine").lpf(80).shape(.4).attack(.001).release(.4).clip(1)\r
-  .gain(.7).room(.5).roomsize(6)\r
-  .mask("<0!24 1 0!15 1 0!15 1>")\r
-\r
-// tape stop feel at the tail of the drop\r
-$: s("hook").slow(10).speed(-.5).lpf(1500)\r
-  .room(.9).roomsize(9).gain(.4)\r
-  .mask("<0!14 0!1 1>")\r
-\r
-// =====================================================================\r
-// AIR\r
-// =====================================================================\r
-\r
-$: s("crackle").density(.03).gain(.15).hpf(1500)\r
-$: s("brown").gain(.03).lpf(200)\r
+`,__vite_glob_0_2=`// "Low Tide Radio" @by Stefanos Amanuel
+// @genre liquid dnb, vocal
+// @version 1.3
+// @license CC BY-NC-SA 4.0
+// 172 bpm, B minor. Vocal-led: a CC0 sung hook in D major carries the song and comes round
+// every 10 bars so it drifts against the 8-bar sections. 64-bar form:
+// 8 intro / 16 A / 8 B (lifted chords + lead line) / 8 breakdown / 16 A-prime / 8 B outro.
+// Three 2-bar interludes (drums-out reversed vocal, halftime, vocal stutter roll) each roll
+// a 1-in-5 chance at their slot in every 16 bars.
+
+samples('github:tidalcycles/dirt-samples')
+samples({
+  hook: 'https://cdn.freesound.org/previews/645/645479_12449013-lq.mp3',           // sung female hook in D major, CC0
+  ooh:  { c4: 'https://cdn.freesound.org/previews/727/727703_1690102-lq.mp3' },   // one breathy sung C, CC0 (owstu)
+})
+setcpm(172/4)
+
+// A = Bm7 F#m7 G^7 A (i v VI VII)   B = G^7 A Bm7 F#m7 (same chords, lifted order)
+let chords = "<[Bm7 F#m7 G^7 A]!6 [G^7 A Bm7 F#m7]!2 [Bm7 F#m7 G^7 A]!6 [G^7 A Bm7 F#m7]!2>/4"
+let roots  = "<[b1 f#1 g1 a1]!6 [g1 a1 b1 f#1]!2 [b1 f#1 g1 a1]!6 [g1 a1 b1 f#1]!2>/4"
+let drums     = "<0!8 1!24 0!8 1!24>"
+let full      = "<0!24 1!8 0!8 1!24>"      // B, A', B2
+let sectionB  = "<0!24 1!8 0!24 1!8>"
+let aPrime    = "<0!40 1!16 0!8>"
+let breakdown = "<0!32 1!8 0!24>"
+let hits      = "<0!24 1 0!15 1 0!15 1 0!7>"
+let skel      = "<1!4 0!36 1!16 0!8>"      // sparse skeleton for the top of A'
+// INTERLUDES: each has a 1-in-5 roll at its slot in every 16 bars. the "Off" twins are the
+// same roll with the answers swapped, so they always agree with their gate.
+let dropGate    = "<0!14 [1|0|0|0|0]@2>"        // bars 15-16 of each 16: drums vanish, vocal runs backwards
+let dropOff     = "<1!14 [0|1|1|1|1]@2>"
+let halfGate    = "<0!6 [1|0|0|0|0]@2 0!8>"     // bars 7-8: halftime
+let halfOff     = "<1!6 [0|1|1|1|1]@2 1!8>"
+let stutterGate = "<0!10 [1|0|0|0|0]@2 0!4>"    // bars 11-12: vocal stutter roll
+
+// =====================================================================
+// VOCAL
+// =====================================================================
+
+// main hook — slow(20) so it lands ~3x across the form, and masked off for
+// intro (bars 1-8), breakdown (bars 33-40), and the final B (bars 57-64).
+// when it does arrive it's the only thing carrying the melody, so it hits.
+$: s("hook").slow(20).speed(.97).hpf(150).lpf(4500)
+  .delay(.35).delaytime(.345).delayfeedback(.45)
+  .room(.6).roomsize(6).gain(.85)
+  .mask("<0!8 1!24 0!8 0!8 1!16 0!8>")
+
+// octave-down ghost — now the everyday presence instead of the full hook.
+// slower speed, lower gain, masks on the same A / A-prime zones so it
+// doesn't clutter the full hook when it lands.
+$: s("hook").slow(20).speed(.485).lpf(1200).room(.8).roomsize(8).gain(.32)
+  .mask("<0!8 1!16 0!8 1!8 1!8 1!16 0!8>")
+
+// word stutter in the bar before the vocal comes round — kept, but the mask
+// now only fires when the full hook is actually about to land
+$: s("hook").slice(16, "[~@4 3 ~ 3 ~ ~ 3 ~ ~]").cut(3).hpf(400).lpf(5000)
+  .speed("<1 1 1 .5>").delay(.4).delaytime(.26).delayfeedback(.5).room(.5).roomsize(4)
+  .gain(.55).mask("<0!19 1 0!19 1 0!23>")
+
+// breathy held note — unchanged, sits under everything
+$: note("<[f#3 c#4 d4 e4]!6 [d4 e4 f#3 c#4]!2 [f#3 c#4 d4 e4]!6 [d4 e4 f#3 c#4]!2>/4")
+  .s("ooh").clip(1).attack(.1).release(.3)
+  .lpf(3000).room(.7).roomsize(6).gain(.4).pan(.6).orbit(2)
+
+// --- EXPANSION ---
+
+// harmony hook — only rides alongside the full hook, so it inherits the
+// rarity automatically. same 5th-up interval.
+$: s("hook").slow(20).speed(1.455).hpf(400).lpf(3500)
+  .room(.8).roomsize(7).gain(.26).pan(.35)
+  .mask("<0!8 1!24 0!8 0!8 1!16 0!8>")
+
+// hook dry and close in the breakdown — unchanged, this is the *only* full
+// hook moment that's really exposed, so it earns the space
+$: s("hook").slow(20).speed(.97).hpf(200).lpf(5500)
+  .room(.35).roomsize(3).gain(.7)
+  .mask(breakdown)
+
+// echo throw — last 8th of every 4 bars. this does most of the "vocal is
+// present" work now, so bump it up slightly and let it fire more often.
+$: s("hook").slice(8, "~ ~ ~ ~ ~ ~ ~ 5").cut(2)
+  .hpf(500).lpf(4500).speed(1).gain(.6)
+  .delay(.75).delaytime(.345).delayfeedback(.7)
+  .room(.6).roomsize(6).mask("<0!3 1>")
+
+// vocal chop stab — carry more of the texture now. widened to the whole A
+// and B zones and made slightly more frequent so the voice feels continuous
+// without the full hook ever having to play.
+$: s("hook").slice(16, "<~ ~ 7 ~ ~ 7 ~ ~ ~ 7 ~ ~ 7 ~ 7 ~>").cut(3)
+  .speed(1.2).hpf(600).lpf(4000).clip(.4)
+  .room(.5).roomsize(4).gain(.38).pan(sine.slow(2).range(.4,.6))
+  .mask("<0!8 1!8 1!8 1!8 0!8 1!16 0!8>")
+
+// =====================================================================
+// BODY: keys + mid-bass
+// =====================================================================
+
+$: chord(chords).anchor("g4").voicing().s("gm_epiano2")
+  .struct("x ~@7 x ~@7").attack(.02).clip(1).velocity("<.5 .55 .5 .6>")
+  .lpf(2200).room(.5).roomsize(4).gain(.55).orbit(3).mask("<0!8 1!56>")
+
+$: note(roots).add(note(12)).struct("x@10 x@2 x@4")
+  .s("sawtooth").superimpose(x => x.add(note(.12)))
+  .lpf(sine.slow(8).range(300, 550)).clip(.9).release(.05).gain(.2).orbit(3).mask(full)
+
+// --- EXPANSION ---
+
+// rhodes ghost — octave-down e-piano, sparse, under the main keys
+$: chord(chords).anchor("d4").voicing().s("gm_epiano1")
+  .struct("~ x ~ ~ ~ ~ ~ ~ ~ x ~ ~ ~ ~ x ~")
+  .attack(.05).clip(1.4).velocity(.35)
+  .lpf(sine.slow(16).range(1400, 2600))
+  .room(.65).roomsize(5).gain(.4).orbit(3)
+  .mask("<0!8 1!56>")
+
+// bell / glock accents — single high note marking the chord change
+$: note("<[f#6 ~ ~ ~] [c#6 ~ ~ ~] [b5 ~ ~ ~] [a5 ~ ~ ~]>")
+  .s("triangle").attack(.005).clip(.6).release(.4)
+  .delay(.5).delaytime(.52).delayfeedback(.55)
+  .room(.75).roomsize(6).gain(.22).pan(.55).orbit(2)
+  .mask("<0!8 1!24 0!8 1!24>")
+
+// reverse swell — pad tail run backwards into each section change
+$: chord(chords).anchor("a4").voicing().s("gm_pad_sweep")
+  .attack(.01).release(.01).clip(1).speed(-1)
+  .lpf(1800).room(.9).roomsize(8).gain(.22).orbit(2)
+  .mask("<0!7 1 0!23 1 0!7 1 0!23 1>")
+
+// mid-bass passing tone between roots in A'
+$: note("<[b1 ~ ~ ~ f#1 ~ ~ ~ g1 ~ ~ ~ a1 ~ ~ ~] [g1 ~ ~ ~ a1 ~ ~ ~ b1 ~ ~ ~ f#1 ~ ~ ~]>")
+  .struct("~ ~ ~ ~ x ~ ~ ~ ~ ~ ~ ~ x ~ ~ ~")
+  .s("sawtooth").lpf(420).lpq(4).attack(.01).release(.1).clip(.7)
+  .gain(.16).room(.15).orbit(3)
+  .mask(aPrime)
+
+// =====================================================================
+// PLUCK / LEAD
+// =====================================================================
+
+// pluck: chord tones in 8ths (A)
+$: note("<[b4 ~ d5 ~ f#5 ~ d5 ~] [a4 ~ c#5 ~ e5 ~ c#5 ~] [b4 ~ d5 ~ g5 ~ d5 ~] [a4 ~ c#5 ~ e5 ~ a5 ~]>")
+  .s("sawtooth").lpf(1800).lpenv(2.5).lpa(.002).lpd(.1).lps(0)
+  .clip(.35).release(.12).velocity(.6)
+  .delay(.45).delaytime(.345).delayfeedback(.5)
+  .room(.4).roomsize(4).gain(.4).pan(sine.slow(4).range(.35,.65)).orbit(3)
+  .mask("<1!40 0!16 1!8>")
+  ._pianoroll()
+
+// pluck: busier 16ths in A'
+$: note("<[b4 d5 f#5 d5 b4 d5 f#5 a5 b4 d5 f#5 d5 b4 d5 a5 f#5] [a4 c#5 e5 c#5 a4 c#5 e5 g5 a4 c#5 e5 c#5 a4 e5 c#5 a4] [b4 d5 g5 d5 b4 d5 g5 b5 b4 d5 g5 d5 b4 g5 d5 b4] [a4 c#5 e5 c#5 a4 c#5 e5 a5 a4 c#5 e5 c#5 a4 a5 e5 c#5]>")
+  .s("sawtooth").lpf(2200).lpenv(2).lpa(.002).lpd(.08).lps(0)
+  .clip(.3).release(.1).velocity("[.6 .35 .45 .35]*4")
+  .delay(.35).delaytime(.26).delayfeedback(.4)
+  .room(.4).roomsize(4).gain(.35).pan(sine.slow(3).range(.3,.7)).orbit(3)
+  .mask(aPrime)
+
+// answer figure, top voice, second half of every 4 bars (A sections only)
+$: note("<[~@6 f#5 e5] [~@6 e5 d5] [~@4 d5 ~ b4 ~] [~@6 c#5 b4]>")
+  .s("triangle").attack(.01).clip(.8).release(.2).velocity(.6)
+  .delay(.5).delaytime(.52).delayfeedback(.5).room(.6).roomsize(5).gain(.45).orbit(3)
+  .mask("<0 0 1 1>").mask("<1!24 0!8 1!24 0!8>")
+
+// lead for the B sections: written line over G A Bm F#m
+$: note("<[~ d5 e5 f#5 ~ e5 d5 ~] [e5@3 c#5 e5@2 ~@2] [f#5 ~ d5 ~ b4@4] [~@8] [~ d5 e5 f#5 ~ g5 f#5 ~] [e5@2 ~ c#5 e5@2 a5@2] [f#5@2 d5@2 b4@4] [c#5@4 ~@4]>/1")
+  .s("sawtooth").lpf(1400).lpq(1.5).vib("5:.05").attack(.02).clip(.9).release(.25).velocity(.6)
+  .delay(.4).delaytime(.345).delayfeedback(.45).room(.6).roomsize(5).gain(.42).orbit(3)
+  .mask(sectionB)
+
+// solo lead for the breakdown — simple rising line, answers the vocal
+$: note("<[~ b4 c#5 d5 ~ c#5 b4 ~] [~ a4 b4 c#5 ~ b4 a4 ~] [~ g4 a4 b4 ~ a4 g4 ~] [~ f#4 g4 a4 ~@4]>")
+  .s("triangle").attack(.02).clip(.9).release(.4).velocity(.45)
+  .delay(.55).delaytime(.52).delayfeedback(.55)
+  .room(.8).roomsize(7).gain(.35).pan(sine.slow(4).range(.4,.6)).orbit(3)
+  .mask(breakdown)
+
+// =====================================================================
+// PADS
+// =====================================================================
+
+$: chord(chords).anchor("d4").voicing().s("gm_pad_sweep")
+  .attack(.8).release(1.5).clip(1).lpf("<900!32 1800!8 900!24>").coarse(2)
+  .room(.8).roomsize(6).gain(.28).orbit(2)
+
+$: chord(chords).anchor("a4").voicing().s("supersaw").detune(.3)
+  .attack(.6).release(1.2).clip(1).lpf(perlin.slow(8).range(700, 1500))
+  .room(.7).roomsize(6).gain(".22 .26").orbit(2).mask(full)
+
+// =====================================================================
+// SUB
+// =====================================================================
+
+$: note(roots).struct("x@10 x@2 x@4").add(note("0 12 0"))
+  .s("sine").shape(.2).lpf(180).attack(.005).release(.1).clip(.95).gain(.85)
+  ._scope()
+
+// ghost octave below the sub on the 1 of each bar
+$: note(roots).struct("x ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~")
+  .add(note(-12)).s("sine").lpf(120).shape(.3)
+  .attack(.008).release(.12).clip(.9).gain(.5)
+  .mask(full)
+
+// DRUMS: SP-12 kit, small in A, opening up in the full sections
+$: s("bd").beat("0,10", 16).bank("EmuSP12").gain(.95)
+  .duck("2:3").duckdepth(".3:.15").duckattack(.12).mask(drums).mask(dropOff).mask(halfOff)
+$: s("sd").beat("4,12", 16).bank("EmuSP12").gain(.85).hpf(120).room(.2).roomsize(2).mask(drums).mask(dropOff).mask(halfOff)
+$: s("cp").beat("4,12", 16).bank("EmuSP12").gain(.3).hpf(600).room(.3).roomsize(3).mask(full).mask(dropOff).mask(halfOff)
+$: s("sd").beat("<14 [7,14]>", 16).bank("EmuSP12").gain(.2).speed(1.3).hpf(1000).mask(drums).mask(dropOff).mask(halfOff)
+
+// hats + ride: thinned at the top of A' via skel
+$: s("hh*8").bank("EmuSP12").gain("[.4 .2]*4").mask(drums).mask(skel).mask(dropOff).mask(halfOff)
+$: s("oh").beat("14", 16).bank("EmuSP12").gain(.25).release(.1).mask(full).mask(skel).mask(dropOff).mask(halfOff)
+$: s("linnhats").n("<2 4>").beat("<~ 6 ~ [6,14]>", 16).gain(.25).pan(.7).mask(drums).mask(skel).mask(dropOff).mask(halfOff)
+
+// shaker + shaker-adjacent: kept through A' (the "skeleton" the section rests on)
+$: s("sh*16").bank("RolandTR808").gain("[.2 .1 .15 .1]*4").hpf(4000).pan(.4).mask(drums).mask(dropOff).mask(halfOff)
+
+// break + fills: thinned at the top of A'
+$: s("breaks165/2").fit().chop(16).cut(1).hpf(350).lpf(5000).gain(.3)
+  .lastOf(8, ply(2)).mask(full).mask(skel).mask(dropOff).mask(halfOff)
+$: s("sd*8").bank("EmuSP12").gain("[.3 .35 .4 .45 .5 .55 .6 .7]").speed(1.1).hpf(300)
+  .mask("<0!7 [0 1]>").mask("<1!8 1!16 1!8 0!8 1!16 1!8>")
+
+// transitions + FX: unchanged
+$: s("cr").bank("EmuSP12").gain(.4).room(.5).mask(hits)
+$: s("white").slow(4).attack(3).release(.3).lpf(saw.slow(4).range(300, 8000)).gain(.25)
+  .mask("<0!20 1!4 0!16 1!4 0!20>")
+
+// --- EXPANSION PERCUSSION (also narrowed by skel for consistency) ---
+$: s("sd").bank("EmuSP12").n(1).speed(1.8)
+  .beat("2", 16).gain(.14).hpf(1200).pan(.4)
+  .room(.2).roomsize(2).mask(drums).mask(skel).mask(dropOff).mask(halfOff)
+$: s("hh").bank("EmuSP12").n("<0 2 3 2>")
+  .struct("~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ x x x x")
+  .gain(.2).hpf(800).pan(perlin.range(.5,.7))
+  .mask("<0!7 1>").mask(full).mask(skel).mask(dropOff).mask(halfOff)
+$: s("sd").bank("EmuSP12").n(3).speed(2)
+  .struct("~ ~ x ~ ~ x ~ ~ ~ ~ x ~ ~ x ~ ~")
+  .gain(.12).hpf(900).pan(.6).room(.25).roomsize(2)
+  .mask(sectionB)
+// =====================================================================
+// INTERLUDE LANES
+// =====================================================================
+
+// drop: the hook runs backwards through a big room while the drums are gone
+$: s("hook").slow(2).speed(-.97).lpf(2500).room(.9).roomsize(9).gain(.7).mask(dropGate)
+$: chord(chords).anchor("e5").voicing().s("supersaw").detune(.4).attack(.3).clip(1)
+  .lpf(2500).room(.9).roomsize(8).gain(.3).orbit(2).mask(dropGate)
+
+// halftime: kick on 1, snare on 3, sub holds, nothing else
+$: s("bd").beat("0", 16).bank("EmuSP12").gain(1).mask(halfGate)
+$: s("sd").beat("8", 16).bank("EmuSP12").gain(.9).room(.5).roomsize(5).mask(halfGate)
+$: s("hook").slice(16, "[3 ~@7 ~@8]").speed(.5).lpf(2000).room(.8).roomsize(6).gain(.5).mask(halfGate)
+
+// stutter: one word rolls faster and faster into the next bar, snare roll under it
+$: s("hook").slice(16, "<[3 3 3 3 3*2 3*2 3*4 3*4] [3*8 3*8 3*16 3*16]>").cut(3)
+  .hpf(400).lpf(6000).pan(sine.fast(2).range(.3,.7)).gain(.6).mask(stutterGate)
+$: s("sd*16").bank("EmuSP12").gain(saw.slow(2).range(.2,.6)).speed(1.15).hpf(400).mask(stutterGate)
+
+// --- EXPANSION ---
+
+// dub delay send — vocal fires into the drop
+$: s("hook").slice(16, "~@14 7 ~").cut(3)
+  .hpf(600).lpf(3500).speed(.97).gain(.6)
+  .delay(.85).delaytime(.69).delayfeedback(.75).room(.9).roomsize(9)
+  .mask(dropGate)
+
+// noise rise into each B
+$: s("white").slow(8).attack(4).release(.2)
+  .bpf(saw.slow(8).range(400, 6000)).bpq(8)
+  .gain(.18).room(.7).roomsize(7)
+  .mask("<0!23 1 0!15 1 0!23 1>")
+
+// impact / sub drop on the first beat of B and A-prime
+$: note("b0").struct("x ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~")
+  .s("sine").lpf(80).shape(.4).attack(.001).release(.4).clip(1)
+  .gain(.7).room(.5).roomsize(6)
+  .mask("<0!24 1 0!15 1 0!15 1>")
+
+// tape stop feel at the tail of the drop
+$: s("hook").slow(10).speed(-.5).lpf(1500)
+  .room(.9).roomsize(9).gain(.4)
+  .mask("<0!14 0!1 1>")
+
+// =====================================================================
+// AIR
+// =====================================================================
+
+$: s("crackle").density(.03).gain(.15).hpf(1500)
+$: s("brown").gain(.03).lpf(200)
 `,__vite_glob_0_3=`// "Ossuary" @by Stefanos Amanuel
 // @genre dark dnb, halftime
 // @version 1.1
@@ -916,4 +916,4 @@ Defaulting to 2020, but this will stop working in the future.`)),t.ecmaVersion=1
  at `+f}return t};peg$SyntaxError.buildMessage=function(e,t){var a={literal:function(d){return'"'+u(d.text)+'"'},class:function(d){var b=d.parts.map(function(F){return Array.isArray(F)?l(F[0])+"-"+l(F[1]):l(F)});return"["+(d.inverted?"^":"")+b.join("")+"]"},any:function(){return"any character"},end:function(){return"end of input"},other:function(d){return d.description}};function o(d){return d.charCodeAt(0).toString(16).toUpperCase()}function u(d){return d.replace(/\\/g,"\\\\").replace(/"/g,'\\"').replace(/\0/g,"\\0").replace(/\t/g,"\\t").replace(/\n/g,"\\n").replace(/\r/g,"\\r").replace(/[\x00-\x0F]/g,function(b){return"\\x0"+o(b)}).replace(/[\x10-\x1F\x7F-\x9F]/g,function(b){return"\\x"+o(b)})}function l(d){return d.replace(/\\/g,"\\\\").replace(/\]/g,"\\]").replace(/\^/g,"\\^").replace(/-/g,"\\-").replace(/\0/g,"\\0").replace(/\t/g,"\\t").replace(/\n/g,"\\n").replace(/\r/g,"\\r").replace(/[\x00-\x0F]/g,function(b){return"\\x0"+o(b)}).replace(/[\x10-\x1F\x7F-\x9F]/g,function(b){return"\\x"+o(b)})}function f(d){return a[d.type](d)}function p(d){var b=d.map(f),F,k;if(b.sort(),b.length>0){for(F=1,k=1;F<b.length;F++)b[F-1]!==b[F]&&(b[k]=b[F],k++);b.length=k}switch(b.length){case 1:return b[0];case 2:return b[0]+" or "+b[1];default:return b.slice(0,-1).join(", ")+", or "+b[b.length-1]}}function g(d){return d?'"'+u(d)+'"':"end of input"}return"Expected "+p(e)+" but "+g(t)+" found."};function peg$parse(e,t){t=t!==void 0?t:{};var a={},o=t.grammarSource,u={start:rn},l=rn,f=".",p="-",g="0",d=",",b="|",F="[",k="]",E="{",R="}",L="%",N="<",z=">",j="!",ee="(",I=")",O="/",q="*",te="?",se=":",he="..",ie="^",ge="struct",_e="target",pe="euclid",be="slow",Ae="rotL",Ee="rotR",xe="fast",De="scale",Oe="//",Je="cat",st="$",ye="setcps",Qe="setbpm",pt="hush",rt=/^[1-9]/,Te=/^[eE]/,je=/^[+\-]/,ze=/^[0-9]/,Ye=/^[ \n\r\t\xA0]/,ht=/^["']/,ke=/^[#\--.0-9A-Z\^-_a-z~\xAA\xB5\xBA\xC0-\xD6\xD8-\xF6\xF8-\u02C1\u02C6-\u02D1\u02E0-\u02E4\u02EC\u02EE\u0370-\u0374\u0376-\u0377\u037A-\u037D\u037F\u0386\u0388-\u038A\u038C\u038E-\u03A1\u03A3-\u03F5\u03F7-\u0481\u048A-\u052F\u0531-\u0556\u0559\u0560-\u0588\u05D0-\u05EA\u05EF-\u05F2\u0620-\u064A\u066E-\u066F\u0671-\u06D3\u06D5\u06E5-\u06E6\u06EE-\u06EF\u06FA-\u06FC\u06FF\u0710\u0712-\u072F\u074D-\u07A5\u07B1\u07CA-\u07EA\u07F4-\u07F5\u07FA\u0800-\u0815\u081A\u0824\u0828\u0840-\u0858\u0860-\u086A\u08A0-\u08B4\u08B6-\u08BD\u0904-\u0939\u093D\u0950\u0958-\u0961\u0971-\u0980\u0985-\u098C\u098F-\u0990\u0993-\u09A8\u09AA-\u09B0\u09B2\u09B6-\u09B9\u09BD\u09CE\u09DC-\u09DD\u09DF-\u09E1\u09F0-\u09F1\u09FC\u0A05-\u0A0A\u0A0F-\u0A10\u0A13-\u0A28\u0A2A-\u0A30\u0A32-\u0A33\u0A35-\u0A36\u0A38-\u0A39\u0A59-\u0A5C\u0A5E\u0A72-\u0A74\u0A85-\u0A8D\u0A8F-\u0A91\u0A93-\u0AA8\u0AAA-\u0AB0\u0AB2-\u0AB3\u0AB5-\u0AB9\u0ABD\u0AD0\u0AE0-\u0AE1\u0AF9\u0B05-\u0B0C\u0B0F-\u0B10\u0B13-\u0B28\u0B2A-\u0B30\u0B32-\u0B33\u0B35-\u0B39\u0B3D\u0B5C-\u0B5D\u0B5F-\u0B61\u0B71\u0B83\u0B85-\u0B8A\u0B8E-\u0B90\u0B92-\u0B95\u0B99-\u0B9A\u0B9C\u0B9E-\u0B9F\u0BA3-\u0BA4\u0BA8-\u0BAA\u0BAE-\u0BB9\u0BD0\u0C05-\u0C0C\u0C0E-\u0C10\u0C12-\u0C28\u0C2A-\u0C39\u0C3D\u0C58-\u0C5A\u0C60-\u0C61\u0C80\u0C85-\u0C8C\u0C8E-\u0C90\u0C92-\u0CA8\u0CAA-\u0CB3\u0CB5-\u0CB9\u0CBD\u0CDE\u0CE0-\u0CE1\u0CF1-\u0CF2\u0D05-\u0D0C\u0D0E-\u0D10\u0D12-\u0D3A\u0D3D\u0D4E\u0D54-\u0D56\u0D5F-\u0D61\u0D7A-\u0D7F\u0D85-\u0D96\u0D9A-\u0DB1\u0DB3-\u0DBB\u0DBD\u0DC0-\u0DC6\u0E01-\u0E30\u0E32-\u0E33\u0E40-\u0E46\u0E81-\u0E82\u0E84\u0E87-\u0E88\u0E8A\u0E8D\u0E94-\u0E97\u0E99-\u0E9F\u0EA1-\u0EA3\u0EA5\u0EA7\u0EAA-\u0EAB\u0EAD-\u0EB0\u0EB2-\u0EB3\u0EBD\u0EC0-\u0EC4\u0EC6\u0EDC-\u0EDF\u0F00\u0F40-\u0F47\u0F49-\u0F6C\u0F88-\u0F8C\u1000-\u102A\u103F\u1050-\u1055\u105A-\u105D\u1061\u1065-\u1066\u106E-\u1070\u1075-\u1081\u108E\u10A0-\u10C5\u10C7\u10CD\u10D0-\u10FA\u10FC-\u1248\u124A-\u124D\u1250-\u1256\u1258\u125A-\u125D\u1260-\u1288\u128A-\u128D\u1290-\u12B0\u12B2-\u12B5\u12B8-\u12BE\u12C0\u12C2-\u12C5\u12C8-\u12D6\u12D8-\u1310\u1312-\u1315\u1318-\u135A\u1380-\u138F\u13A0-\u13F5\u13F8-\u13FD\u1401-\u166C\u166F-\u167F\u1681-\u169A\u16A0-\u16EA\u16EE-\u16F8\u1700-\u170C\u170E-\u1711\u1720-\u1731\u1740-\u1751\u1760-\u176C\u176E-\u1770\u1780-\u17B3\u17D7\u17DC\u1820-\u1878\u1880-\u1884\u1887-\u18A8\u18AA\u18B0-\u18F5\u1900-\u191E\u1950-\u196D\u1970-\u1974\u1980-\u19AB\u19B0-\u19C9\u1A00-\u1A16\u1A20-\u1A54\u1AA7\u1B05-\u1B33\u1B45-\u1B4B\u1B83-\u1BA0\u1BAE-\u1BAF\u1BBA-\u1BE5\u1C00-\u1C23\u1C4D-\u1C4F\u1C5A-\u1C7D\u1C80-\u1C88\u1C90-\u1CBA\u1CBD-\u1CBF\u1CE9-\u1CEC\u1CEE-\u1CF1\u1CF5-\u1CF6\u1D00-\u1DBF\u1E00-\u1F15\u1F18-\u1F1D\u1F20-\u1F45\u1F48-\u1F4D\u1F50-\u1F57\u1F59\u1F5B\u1F5D\u1F5F-\u1F7D\u1F80-\u1FB4\u1FB6-\u1FBC\u1FBE\u1FC2-\u1FC4\u1FC6-\u1FCC\u1FD0-\u1FD3\u1FD6-\u1FDB\u1FE0-\u1FEC\u1FF2-\u1FF4\u1FF6-\u1FFC\u2071\u207F\u2090-\u209C\u2102\u2107\u210A-\u2113\u2115\u2119-\u211D\u2124\u2126\u2128\u212A-\u212D\u212F-\u2139\u213C-\u213F\u2145-\u2149\u214E\u2160-\u2188\u2C00-\u2C2E\u2C30-\u2C5E\u2C60-\u2CE4\u2CEB-\u2CEE\u2CF2-\u2CF3\u2D00-\u2D25\u2D27\u2D2D\u2D30-\u2D67\u2D6F\u2D80-\u2D96\u2DA0-\u2DA6\u2DA8-\u2DAE\u2DB0-\u2DB6\u2DB8-\u2DBE\u2DC0-\u2DC6\u2DC8-\u2DCE\u2DD0-\u2DD6\u2DD8-\u2DDE\u2E2F\u3005-\u3007\u3021-\u3029\u3031-\u3035\u3038-\u303C\u3041-\u3096\u309D-\u309F\u30A1-\u30FA\u30FC-\u30FF\u3105-\u312F\u3131-\u318E\u31A0-\u31BA\u31F0-\u31FF\u3400-\u4DB5\u4E00-\u9FEF\uA000-\uA48C\uA4D0-\uA4FD\uA500-\uA60C\uA610-\uA61F\uA62A-\uA62B\uA640-\uA66E\uA67F-\uA69D\uA6A0-\uA6EF\uA717-\uA71F\uA722-\uA788\uA78B-\uA7B9\uA7F7-\uA801\uA803-\uA805\uA807-\uA80A\uA80C-\uA822\uA840-\uA873\uA882-\uA8B3\uA8F2-\uA8F7\uA8FB\uA8FD-\uA8FE\uA90A-\uA925\uA930-\uA946\uA960-\uA97C\uA984-\uA9B2\uA9CF\uA9E0-\uA9E4\uA9E6-\uA9EF\uA9FA-\uA9FE\uAA00-\uAA28\uAA40-\uAA42\uAA44-\uAA4B\uAA60-\uAA76\uAA7A\uAA7E-\uAAAF\uAAB1\uAAB5-\uAAB6\uAAB9-\uAABD\uAAC0\uAAC2\uAADB-\uAADD\uAAE0-\uAAEA\uAAF2-\uAAF4\uAB01-\uAB06\uAB09-\uAB0E\uAB11-\uAB16\uAB20-\uAB26\uAB28-\uAB2E\uAB30-\uAB5A\uAB5C-\uAB65\uAB70-\uABE2\uAC00-\uD7A3\uD7B0-\uD7C6\uD7CB-\uD7FB\uF900-\uFA6D\uFA70-\uFAD9\uFB00-\uFB06\uFB13-\uFB17\uFB1D\uFB1F-\uFB28\uFB2A-\uFB36\uFB38-\uFB3C\uFB3E\uFB40-\uFB41\uFB43-\uFB44\uFB46-\uFBB1\uFBD3-\uFD3D\uFD50-\uFD8F\uFD92-\uFDC7\uFDF0-\uFDFB\uFE70-\uFE74\uFE76-\uFEFC\uFF21-\uFF3A\uFF41-\uFF5A\uFF66-\uFFBE\uFFC2-\uFFC7\uFFCA-\uFFCF\uFFD2-\uFFD7\uFFDA-\uFFDC]/,fe=/^[@_]/,Re=/^[^\n]/,de=Jt("number"),ue=Ue(".",!1),we=At([["1","9"]],!1,!1),Ce=At(["e","E"],!1,!1),Ne=At(["+","-"],!1,!1),$e=Ue("-",!1),ft=Ue("0",!1),_t=At([["0","9"]],!1,!1),Ke=Jt("whitespace"),ot=At([" ",`
 `,"\r","	"," "],!1,!1),Ct=Ue(",",!1),Pe=Ue("|",!1),Ve=At(['"',"'"],!1,!1),ve=Jt('a letter, a number, "-", "#", ".", "^", "_"'),tt=At(["#",["-","."],["0","9"],["A","Z"],["^","_"],["a","z"],"~","ª","µ","º",["À","Ö"],["Ø","ö"],["ø","ˁ"],["ˆ","ˑ"],["ˠ","ˤ"],"ˬ","ˮ",["Ͱ","ʹ"],["Ͷ","ͷ"],["ͺ","ͽ"],"Ϳ","Ά",["Έ","Ί"],"Ό",["Ύ","Ρ"],["Σ","ϵ"],["Ϸ","ҁ"],["Ҋ","ԯ"],["Ա","Ֆ"],"ՙ",["ՠ","ֈ"],["א","ת"],["ׯ","ײ"],["ؠ","ي"],["ٮ","ٯ"],["ٱ","ۓ"],"ە",["ۥ","ۦ"],["ۮ","ۯ"],["ۺ","ۼ"],"ۿ","ܐ",["ܒ","ܯ"],["ݍ","ޥ"],"ޱ",["ߊ","ߪ"],["ߴ","ߵ"],"ߺ",["ࠀ","ࠕ"],"ࠚ","ࠤ","ࠨ",["ࡀ","ࡘ"],["ࡠ","ࡪ"],["ࢠ","ࢴ"],["ࢶ","ࢽ"],["ऄ","ह"],"ऽ","ॐ",["क़","ॡ"],["ॱ","ঀ"],["অ","ঌ"],["এ","ঐ"],["ও","ন"],["প","র"],"ল",["শ","হ"],"ঽ","ৎ",["ড়","ঢ়"],["য়","ৡ"],["ৰ","ৱ"],"ৼ",["ਅ","ਊ"],["ਏ","ਐ"],["ਓ","ਨ"],["ਪ","ਰ"],["ਲ","ਲ਼"],["ਵ","ਸ਼"],["ਸ","ਹ"],["ਖ਼","ੜ"],"ਫ਼",["ੲ","ੴ"],["અ","ઍ"],["એ","ઑ"],["ઓ","ન"],["પ","ર"],["લ","ળ"],["વ","હ"],"ઽ","ૐ",["ૠ","ૡ"],"ૹ",["ଅ","ଌ"],["ଏ","ଐ"],["ଓ","ନ"],["ପ","ର"],["ଲ","ଳ"],["ଵ","ହ"],"ଽ",["ଡ଼","ଢ଼"],["ୟ","ୡ"],"ୱ","ஃ",["அ","ஊ"],["எ","ஐ"],["ஒ","க"],["ங","ச"],"ஜ",["ஞ","ட"],["ண","த"],["ந","ப"],["ம","ஹ"],"ௐ",["అ","ఌ"],["ఎ","ఐ"],["ఒ","న"],["ప","హ"],"ఽ",["ౘ","ౚ"],["ౠ","ౡ"],"ಀ",["ಅ","ಌ"],["ಎ","ಐ"],["ಒ","ನ"],["ಪ","ಳ"],["ವ","ಹ"],"ಽ","ೞ",["ೠ","ೡ"],["ೱ","ೲ"],["അ","ഌ"],["എ","ഐ"],["ഒ","ഺ"],"ഽ","ൎ",["ൔ","ൖ"],["ൟ","ൡ"],["ൺ","ൿ"],["අ","ඖ"],["ක","න"],["ඳ","ර"],"ල",["ව","ෆ"],["ก","ะ"],["า","ำ"],["เ","ๆ"],["ກ","ຂ"],"ຄ",["ງ","ຈ"],"ຊ","ຍ",["ດ","ທ"],["ນ","ຟ"],["ມ","ຣ"],"ລ","ວ",["ສ","ຫ"],["ອ","ະ"],["າ","ຳ"],"ຽ",["ເ","ໄ"],"ໆ",["ໜ","ໟ"],"ༀ",["ཀ","ཇ"],["ཉ","ཬ"],["ྈ","ྌ"],["က","ဪ"],"ဿ",["ၐ","ၕ"],["ၚ","ၝ"],"ၡ",["ၥ","ၦ"],["ၮ","ၰ"],["ၵ","ႁ"],"ႎ",["Ⴀ","Ⴥ"],"Ⴧ","Ⴭ",["ა","ჺ"],["ჼ","ቈ"],["ቊ","ቍ"],["ቐ","ቖ"],"ቘ",["ቚ","ቝ"],["በ","ኈ"],["ኊ","ኍ"],["ነ","ኰ"],["ኲ","ኵ"],["ኸ","ኾ"],"ዀ",["ዂ","ዅ"],["ወ","ዖ"],["ዘ","ጐ"],["ጒ","ጕ"],["ጘ","ፚ"],["ᎀ","ᎏ"],["Ꭰ","Ᏽ"],["ᏸ","ᏽ"],["ᐁ","ᙬ"],["ᙯ","ᙿ"],["ᚁ","ᚚ"],["ᚠ","ᛪ"],["ᛮ","ᛸ"],["ᜀ","ᜌ"],["ᜎ","ᜑ"],["ᜠ","ᜱ"],["ᝀ","ᝑ"],["ᝠ","ᝬ"],["ᝮ","ᝰ"],["ក","ឳ"],"ៗ","ៜ",["ᠠ","ᡸ"],["ᢀ","ᢄ"],["ᢇ","ᢨ"],"ᢪ",["ᢰ","ᣵ"],["ᤀ","ᤞ"],["ᥐ","ᥭ"],["ᥰ","ᥴ"],["ᦀ","ᦫ"],["ᦰ","ᧉ"],["ᨀ","ᨖ"],["ᨠ","ᩔ"],"ᪧ",["ᬅ","ᬳ"],["ᭅ","ᭋ"],["ᮃ","ᮠ"],["ᮮ","ᮯ"],["ᮺ","ᯥ"],["ᰀ","ᰣ"],["ᱍ","ᱏ"],["ᱚ","ᱽ"],["ᲀ","ᲈ"],["Ა","Ჺ"],["Ჽ","Ჿ"],["ᳩ","ᳬ"],["ᳮ","ᳱ"],["ᳵ","ᳶ"],["ᴀ","ᶿ"],["Ḁ","ἕ"],["Ἐ","Ἕ"],["ἠ","ὅ"],["Ὀ","Ὅ"],["ὐ","ὗ"],"Ὑ","Ὓ","Ὕ",["Ὗ","ώ"],["ᾀ","ᾴ"],["ᾶ","ᾼ"],"ι",["ῂ","ῄ"],["ῆ","ῌ"],["ῐ","ΐ"],["ῖ","Ί"],["ῠ","Ῥ"],["ῲ","ῴ"],["ῶ","ῼ"],"ⁱ","ⁿ",["ₐ","ₜ"],"ℂ","ℇ",["ℊ","ℓ"],"ℕ",["ℙ","ℝ"],"ℤ","Ω","ℨ",["K","ℭ"],["ℯ","ℹ"],["ℼ","ℿ"],["ⅅ","ⅉ"],"ⅎ",["Ⅰ","ↈ"],["Ⰰ","Ⱞ"],["ⰰ","ⱞ"],["Ⱡ","ⳤ"],["Ⳬ","ⳮ"],["Ⳳ","ⳳ"],["ⴀ","ⴥ"],"ⴧ","ⴭ",["ⴰ","ⵧ"],"ⵯ",["ⶀ","ⶖ"],["ⶠ","ⶦ"],["ⶨ","ⶮ"],["ⶰ","ⶶ"],["ⶸ","ⶾ"],["ⷀ","ⷆ"],["ⷈ","ⷎ"],["ⷐ","ⷖ"],["ⷘ","ⷞ"],"ⸯ",["々","〇"],["〡","〩"],["〱","〵"],["〸","〼"],["ぁ","ゖ"],["ゝ","ゟ"],["ァ","ヺ"],["ー","ヿ"],["ㄅ","ㄯ"],["ㄱ","ㆎ"],["ㆠ","ㆺ"],["ㇰ","ㇿ"],["㐀","䶵"],["一","鿯"],["ꀀ","ꒌ"],["ꓐ","ꓽ"],["ꔀ","ꘌ"],["ꘐ","ꘟ"],["ꘪ","ꘫ"],["Ꙁ","ꙮ"],["ꙿ","ꚝ"],["ꚠ","ꛯ"],["ꜗ","ꜟ"],["Ꜣ","ꞈ"],["Ꞌ","ꞹ"],["ꟷ","ꠁ"],["ꠃ","ꠅ"],["ꠇ","ꠊ"],["ꠌ","ꠢ"],["ꡀ","ꡳ"],["ꢂ","ꢳ"],["ꣲ","ꣷ"],"ꣻ",["ꣽ","ꣾ"],["ꤊ","ꤥ"],["ꤰ","ꥆ"],["ꥠ","ꥼ"],["ꦄ","ꦲ"],"ꧏ",["ꧠ","ꧤ"],["ꧦ","ꧯ"],["ꧺ","ꧾ"],["ꨀ","ꨨ"],["ꩀ","ꩂ"],["ꩄ","ꩋ"],["ꩠ","ꩶ"],"ꩺ",["ꩾ","ꪯ"],"ꪱ",["ꪵ","ꪶ"],["ꪹ","ꪽ"],"ꫀ","ꫂ",["ꫛ","ꫝ"],["ꫠ","ꫪ"],["ꫲ","ꫴ"],["ꬁ","ꬆ"],["ꬉ","ꬎ"],["ꬑ","ꬖ"],["ꬠ","ꬦ"],["ꬨ","ꬮ"],["ꬰ","ꭚ"],["ꭜ","ꭥ"],["ꭰ","ꯢ"],["가","힣"],["ힰ","ퟆ"],["ퟋ","ퟻ"],["豈","舘"],["並","龎"],["ﬀ","ﬆ"],["ﬓ","ﬗ"],"יִ",["ײַ","ﬨ"],["שׁ","זּ"],["טּ","לּ"],"מּ",["נּ","סּ"],["ףּ","פּ"],["צּ","ﮱ"],["ﯓ","ﴽ"],["ﵐ","ﶏ"],["ﶒ","ﷇ"],["ﷰ","ﷻ"],["ﹰ","ﹴ"],["ﹶ","ﻼ"],["Ａ","Ｚ"],["ａ","ｚ"],["ｦ","ﾾ"],["ￂ","ￇ"],["ￊ","ￏ"],["ￒ","ￗ"],["ￚ","ￜ"]],!1,!1),qe=Ue("[",!1),kt=Ue("]",!1),Lt=Ue("{",!1),ut=Ue("}",!1),xt=Ue("%",!1),Le=Ue("<",!1),Xe=Ue(">",!1),nt=At(["@","_"],!1,!1),et=Ue("!",!1),Ie=Ue("(",!1),He=Ue(")",!1),mt=Ue("/",!1),yt=Ue("*",!1),It=Ue("?",!1),Yt=Ue(":",!1),Kt=Ue("..",!1),S=Ue("^",!1),B=Ue("struct",!1),M=Ue("target",!1),Z=Ue("euclid",!1),U=Ue("slow",!1),re=Ue("rotL",!1),le=Ue("rotR",!1),me=Ue("fast",!1),Ge=Ue("scale",!1),We=Ue("//",!1),at=At([`
 `],!0,!1),St=Ue("cat",!1),Et=Ue("$",!1),Wt=Ue("setcps",!1),zt=Ue("setbpm",!1),bt=Ue("hush",!1),dn=function(){return parseFloat(qn())},hn=function(A){const V=A.join("");return V==="."||V==="_"},_n=function(A){return new zs(A.join(""))},mn=function(A){return A},gn=function(A,V){return A.arguments_.stepsPerCycle=V,A},yn=function(A){return A},bn=function(A){return A.arguments_.alignment="polymeter_slowcat",A},Cn=function(A){return V=>V.options_.weight=(V.options_.weight??1)+(A??2)-1},Gn=function(A){return V=>{const K=(V.options_.reps??1)+(A??2)-1;V.options_.reps=K,V.options_.ops=V.options_.ops.filter(oe=>oe.type_!=="replicate"),V.options_.ops.push({type_:"replicate",arguments_:{amount:K}}),V.options_.weight=K}},vn=function(A,V,K){return oe=>oe.options_.ops.push({type_:"bjorklund",arguments_:{pulse:A,step:V,rotation:K}})},Sn=function(A){return V=>V.options_.ops.push({type_:"stretch",arguments_:{amount:A,type:"slow"}})},An=function(A){return V=>V.options_.ops.push({type_:"stretch",arguments_:{amount:A,type:"fast"}})},Fn=function(A){return V=>V.options_.ops.push({type_:"degradeBy",arguments_:{amount:A,seed:en++}})},xn=function(A){return V=>V.options_.ops.push({type_:"tail",arguments_:{element:A}})},wn=function(A){return V=>V.options_.ops.push({type_:"range",arguments_:{element:A}})},En=function(A,V){const K=new Os(A,{ops:[],weight:1,reps:1});for(const oe of V)oe(K);return K},Dn=function(A,V){return new $t(V,"fastcat",void 0,!!A)},kn=function(A){return{alignment:"stack",list:A}},Ln=function(A){return{alignment:"rand",list:A,seed:en++}},Rn=function(A){return{alignment:"feet",list:A,seed:en++}},Mn=function(A,V){return V&&V.list.length>0?new $t([A,...V.list],V.alignment,V.seed):A},Bn=function(A,V){return new $t(V?[A,...V.list]:[A],"polymeter")},Xn=function(A){return A},Tn=function(A){return{name:"struct",args:{mini:A}}},Zn=function(A){return{name:"target",args:{name:A}}},Nn=function(A,V,K){return{name:"bjorklund",args:{pulse:A,step:parseInt(V)}}},Pn=function(A){return{name:"stretch",args:{amount:A}}},Vn=function(A){return{name:"shift",args:{amount:"-"+A}}},In=function(A){return{name:"shift",args:{amount:A}}},Wn=function(A){return{name:"stretch",args:{amount:"1/"+A}}},zn=function(A){return{name:"scale",args:{scale:A.join("")}}},tn=function(A,V){return V},Un=function(A,V){return V.unshift(A),new $t(V,"slowcat")},On=function(A){return A},Hn=function(A,V){return new Us(A.name,A.args,V)},$n=function(A){return A},Yn=function(A){return A},Kn=function(A){return new Qt("setcps",{value:A})},Jn=function(A){return new Qt("setcps",{value:A/120/2})},jn=function(){return new Qt("hush")},H=t.peg$currPos|0,Ze=H,Rt=[{line:1,column:1}],Gt=H,Ut=t.peg$maxFailExpected||[],Se=t.peg$silentFails|0,Pt;if(t.startRule){if(!(t.startRule in u))throw new Error(`Can't start parsing from rule "`+t.startRule+'".');l=u[t.startRule]}function qn(){return e.substring(Ze,H)}function nn(){return jt(Ze,H)}function Ue(A,V){return{type:"literal",text:A,ignoreCase:V}}function At(A,V,K){return{type:"class",parts:A,inverted:V,ignoreCase:K}}function Qn(){return{type:"end"}}function Jt(A){return{type:"other",description:A}}function sn(A){var V=Rt[A],K;if(V)return V;if(A>=Rt.length)K=Rt.length-1;else for(K=A;!Rt[--K];);for(V=Rt[K],V={line:V.line,column:V.column};K<A;)e.charCodeAt(K)===10?(V.line++,V.column=1):V.column++,K++;return Rt[A]=V,V}function jt(A,V,K){var oe=sn(A),Fe=sn(V),it={source:o,start:{offset:A,line:oe.line,column:oe.column},end:{offset:V,line:Fe.line,column:Fe.column}};return it}function Me(A){H<Gt||(H>Gt&&(Gt=H,Ut=[]),Ut.push(A))}function es(A,V,K){return new peg$SyntaxError(peg$SyntaxError.buildMessage(A,V),A,V,K)}function rn(){var A;return A=Ws(),A}function Ft(){var A,V;return Se++,A=H,os(),V=Ot(),V!==a?(is(),rs(),Ze=A,A=dn()):(H=A,A=a),Se--,A===a&&Se===0&&Me(de),A}function ts(){var A;return e.charCodeAt(H)===46?(A=f,H++):(A=a,Se===0&&Me(ue)),A}function ns(){var A;return A=e.charAt(H),rt.test(A)?H++:(A=a,Se===0&&Me(we)),A}function ss(){var A;return A=e.charAt(H),Te.test(A)?H++:(A=a,Se===0&&Me(Ce)),A}function rs(){var A,V,K,oe,Fe;if(A=H,V=ss(),V!==a){if(K=e.charAt(H),je.test(K)?H++:(K=a,Se===0&&Me(Ne)),K===a&&(K=null),oe=[],Fe=Mt(),Fe!==a)for(;Fe!==a;)oe.push(Fe),Fe=Mt();else oe=a;oe!==a?(V=[V,K,oe],A=V):(H=A,A=a)}else H=A,A=a;return A}function is(){var A,V,K,oe;if(A=H,V=ts(),V!==a){if(K=[],oe=Mt(),oe!==a)for(;oe!==a;)K.push(oe),oe=Mt();else K=a;K!==a?(V=[V,K],A=V):(H=A,A=a)}else H=A,A=a;return A}function Ot(){var A,V,K,oe;if(A=us(),A===a)if(A=H,V=ns(),V!==a){for(K=[],oe=Mt();oe!==a;)K.push(oe),oe=Mt();V=[V,K],A=V}else H=A,A=a;return A}function os(){var A;return e.charCodeAt(H)===45?(A=p,H++):(A=a,Se===0&&Me($e)),A}function us(){var A;return e.charCodeAt(H)===48?(A=g,H++):(A=a,Se===0&&Me(ft)),A}function Mt(){var A;return A=e.charAt(H),ze.test(A)?H++:(A=a,Se===0&&Me(_t)),A}function Be(){var A,V;for(Se++,A=[],V=e.charAt(H),Ye.test(V)?H++:(V=a,Se===0&&Me(ot));V!==a;)A.push(V),V=e.charAt(H),Ye.test(V)?H++:(V=a,Se===0&&Me(ot));return Se--,V=a,Se===0&&Me(Ke),A}function Bt(){var A,V,K,oe;return A=H,V=Be(),e.charCodeAt(H)===44?(K=d,H++):(K=a,Se===0&&Me(Ct)),K!==a?(oe=Be(),V=[V,K,oe],A=V):(H=A,A=a),A}function an(){var A,V,K,oe;return A=H,V=Be(),e.charCodeAt(H)===124?(K=b,H++):(K=a,Se===0&&Me(Pe)),K!==a?(oe=Be(),V=[V,K,oe],A=V):(H=A,A=a),A}function on(){var A,V,K,oe;return A=H,V=Be(),e.charCodeAt(H)===46?(K=f,H++):(K=a,Se===0&&Me(ue)),K!==a?(oe=Be(),V=[V,K,oe],A=V):(H=A,A=a),A}function Xt(){var A;return A=e.charAt(H),ht.test(A)?H++:(A=a,Se===0&&Me(Ve)),A}function Ht(){var A;return Se++,A=e.charAt(H),ke.test(A)?H++:(A=a,Se===0&&Me(tt)),Se--,A===a&&Se===0&&Me(ve),A}function un(){var A,V,K,oe;if(A=H,Be(),V=[],K=Ht(),K!==a)for(;K!==a;)V.push(K),K=Ht();else V=a;return V!==a?(K=Be(),Ze=H,oe=hn(V),oe?oe=a:oe=void 0,oe!==a?(Ze=A,A=_n(V)):(H=A,A=a)):(H=A,A=a),A}function ls(){var A,V,K,oe;return A=H,Be(),e.charCodeAt(H)===91?(V=F,H++):(V=a,Se===0&&Me(qe)),V!==a?(Be(),K=fn(),K!==a?(Be(),e.charCodeAt(H)===93?(oe=k,H++):(oe=a,Se===0&&Me(kt)),oe!==a?(Be(),Ze=A,A=mn(K)):(H=A,A=a)):(H=A,A=a)):(H=A,A=a),A}function cs(){var A,V,K,oe,Fe;return A=H,Be(),e.charCodeAt(H)===123?(V=E,H++):(V=a,Se===0&&Me(Lt)),V!==a?(Be(),K=pn(),K!==a?(Be(),e.charCodeAt(H)===125?(oe=R,H++):(oe=a,Se===0&&Me(ut)),oe!==a?(Fe=fs(),Fe===a&&(Fe=null),Be(),Ze=A,A=gn(K,Fe)):(H=A,A=a)):(H=A,A=a)):(H=A,A=a),A}function fs(){var A,V,K;return A=H,e.charCodeAt(H)===37?(V=L,H++):(V=a,Se===0&&Me(xt)),V!==a?(K=Tt(),K!==a?(Ze=A,A=yn(K)):(H=A,A=a)):(H=A,A=a),A}function ps(){var A,V,K,oe;return A=H,Be(),e.charCodeAt(H)===60?(V=N,H++):(V=a,Se===0&&Me(Le)),V!==a?(Be(),K=pn(),K!==a?(Be(),e.charCodeAt(H)===62?(oe=z,H++):(oe=a,Se===0&&Me(Xe)),oe!==a?(Be(),Ze=A,A=bn(K)):(H=A,A=a)):(H=A,A=a)):(H=A,A=a),A}function Tt(){var A;return A=un(),A===a&&(A=ls(),A===a&&(A=cs(),A===a&&(A=ps()))),A}function ln(){var A;return A=hs(),A===a&&(A=ms(),A===a&&(A=gs(),A===a&&(A=ys(),A===a&&(A=_s(),A===a&&(A=bs(),A===a&&(A=Cs(),A===a&&(A=Gs()))))))),A}function hs(){var A,V,K;return A=H,Be(),V=e.charAt(H),fe.test(V)?H++:(V=a,Se===0&&Me(nt)),V!==a?(K=Ft(),K===a&&(K=null),Ze=A,A=Cn(K)):(H=A,A=a),A}function _s(){var A,V,K;return A=H,Be(),e.charCodeAt(H)===33?(V=j,H++):(V=a,Se===0&&Me(et)),V!==a?(K=Ft(),K===a&&(K=null),Ze=A,A=Gn(K)):(H=A,A=a),A}function ms(){var A,V,K,oe,Fe,it,vt;return A=H,e.charCodeAt(H)===40?(V=ee,H++):(V=a,Se===0&&Me(Ie)),V!==a?(Be(),K=Vt(),K!==a?(Be(),oe=Bt(),oe!==a?(Be(),Fe=Vt(),Fe!==a?(Be(),Bt(),Be(),it=Vt(),it===a&&(it=null),Be(),e.charCodeAt(H)===41?(vt=I,H++):(vt=a,Se===0&&Me(He)),vt!==a?(Ze=A,A=vn(K,Fe,it)):(H=A,A=a)):(H=A,A=a)):(H=A,A=a)):(H=A,A=a)):(H=A,A=a),A}function gs(){var A,V,K;return A=H,e.charCodeAt(H)===47?(V=O,H++):(V=a,Se===0&&Me(mt)),V!==a?(K=Tt(),K!==a?(Ze=A,A=Sn(K)):(H=A,A=a)):(H=A,A=a),A}function ys(){var A,V,K;return A=H,e.charCodeAt(H)===42?(V=q,H++):(V=a,Se===0&&Me(yt)),V!==a?(K=Tt(),K!==a?(Ze=A,A=An(K)):(H=A,A=a)):(H=A,A=a),A}function bs(){var A,V,K;return A=H,e.charCodeAt(H)===63?(V=te,H++):(V=a,Se===0&&Me(It)),V!==a?(K=Ft(),K===a&&(K=null),Ze=A,A=Fn(K)):(H=A,A=a),A}function Cs(){var A,V,K;return A=H,e.charCodeAt(H)===58?(V=se,H++):(V=a,Se===0&&Me(Yt)),V!==a?(K=Tt(),K!==a?(Ze=A,A=xn(K)):(H=A,A=a)):(H=A,A=a),A}function Gs(){var A,V,K;return A=H,e.substr(H,2)===he?(V=he,H+=2):(V=a,Se===0&&Me(Kt)),V!==a?(K=Tt(),K!==a?(Ze=A,A=wn(K)):(H=A,A=a)):(H=A,A=a),A}function Vt(){var A,V,K,oe;if(A=H,V=Tt(),V!==a){for(K=[],oe=ln();oe!==a;)K.push(oe),oe=ln();Ze=A,A=En(V,K)}else H=A,A=a;return A}function Dt(){var A,V,K,oe;if(A=H,e.charCodeAt(H)===94?(V=ie,H++):(V=a,Se===0&&Me(S)),V===a&&(V=null),K=[],oe=Vt(),oe!==a)for(;oe!==a;)K.push(oe),oe=Vt();else K=a;return K!==a?(Ze=A,A=Dn(V,K)):(H=A,A=a),A}function cn(){var A,V,K,oe,Fe;if(A=H,V=[],K=H,oe=Bt(),oe!==a?(Fe=Dt(),Fe!==a?K=Fe:(H=K,K=a)):(H=K,K=a),K!==a)for(;K!==a;)V.push(K),K=H,oe=Bt(),oe!==a?(Fe=Dt(),Fe!==a?K=Fe:(H=K,K=a)):(H=K,K=a);else V=a;return V!==a&&(Ze=A,V=kn(V)),A=V,A}function vs(){var A,V,K,oe,Fe;if(A=H,V=[],K=H,oe=an(),oe!==a?(Fe=Dt(),Fe!==a?K=Fe:(H=K,K=a)):(H=K,K=a),K!==a)for(;K!==a;)V.push(K),K=H,oe=an(),oe!==a?(Fe=Dt(),Fe!==a?K=Fe:(H=K,K=a)):(H=K,K=a);else V=a;return V!==a&&(Ze=A,V=Ln(V)),A=V,A}function Ss(){var A,V,K,oe,Fe;if(A=H,V=[],K=H,oe=on(),oe!==a?(Fe=Dt(),Fe!==a?K=Fe:(H=K,K=a)):(H=K,K=a),K!==a)for(;K!==a;)V.push(K),K=H,oe=on(),oe!==a?(Fe=Dt(),Fe!==a?K=Fe:(H=K,K=a)):(H=K,K=a);else V=a;return V!==a&&(Ze=A,V=Rn(V)),A=V,A}function fn(){var A,V,K;return A=H,V=Dt(),V!==a?(K=cn(),K===a&&(K=vs(),K===a&&(K=Ss())),K===a&&(K=null),Ze=A,A=Mn(V,K)):(H=A,A=a),A}function pn(){var A,V,K;return A=H,V=Dt(),V!==a?(K=cn(),K===a&&(K=null),Ze=A,A=Bn(V,K)):(H=A,A=a),A}function As(){var A,V,K,oe;return A=H,Be(),V=Xt(),V!==a?(Be(),K=fn(),K!==a?(Be(),oe=Xt(),oe!==a?(Ze=A,A=Xn(K)):(H=A,A=a)):(H=A,A=a)):(H=A,A=a),A}function Fs(){var A;return A=Ms(),A===a&&(A=Ds(),A===a&&(A=Rs(),A===a&&(A=ws(),A===a&&(A=Es(),A===a&&(A=xs(),A===a&&(A=Ls(),A===a&&(A=ks()))))))),A}function xs(){var A,V,K;return A=H,e.substr(H,6)===ge?(V=ge,H+=6):(V=a,Se===0&&Me(B)),V!==a?(Be(),K=Zt(),K!==a?(Ze=A,A=Tn(K)):(H=A,A=a)):(H=A,A=a),A}function ws(){var A,V,K,oe,Fe;return A=H,e.substr(H,6)===_e?(V=_e,H+=6):(V=a,Se===0&&Me(M)),V!==a?(Be(),K=Xt(),K!==a?(oe=un(),oe!==a?(Fe=Xt(),Fe!==a?(Ze=A,A=Zn(oe)):(H=A,A=a)):(H=A,A=a)):(H=A,A=a)):(H=A,A=a),A}function Es(){var A,V,K,oe;return A=H,e.substr(H,6)===pe?(V=pe,H+=6):(V=a,Se===0&&Me(Z)),V!==a?(Be(),K=Ot(),K!==a?(Be(),oe=Ot(),oe!==a?(Be(),Ot(),Ze=A,A=Nn(K,oe)):(H=A,A=a)):(H=A,A=a)):(H=A,A=a),A}function Ds(){var A,V,K;return A=H,e.substr(H,4)===be?(V=be,H+=4):(V=a,Se===0&&Me(U)),V!==a?(Be(),K=Ft(),K!==a?(Ze=A,A=Pn(K)):(H=A,A=a)):(H=A,A=a),A}function ks(){var A,V,K;return A=H,e.substr(H,4)===Ae?(V=Ae,H+=4):(V=a,Se===0&&Me(re)),V!==a?(Be(),K=Ft(),K!==a?(Ze=A,A=Vn(K)):(H=A,A=a)):(H=A,A=a),A}function Ls(){var A,V,K;return A=H,e.substr(H,4)===Ee?(V=Ee,H+=4):(V=a,Se===0&&Me(le)),V!==a?(Be(),K=Ft(),K!==a?(Ze=A,A=In(K)):(H=A,A=a)):(H=A,A=a),A}function Rs(){var A,V,K;return A=H,e.substr(H,4)===xe?(V=xe,H+=4):(V=a,Se===0&&Me(me)),V!==a?(Be(),K=Ft(),K!==a?(Ze=A,A=Wn(K)):(H=A,A=a)):(H=A,A=a),A}function Ms(){var A,V,K,oe,Fe;if(A=H,e.substr(H,5)===De?(V=De,H+=5):(V=a,Se===0&&Me(Ge)),V!==a)if(Be(),K=Xt(),K!==a){if(oe=[],Fe=Ht(),Fe!==a)for(;Fe!==a;)oe.push(Fe),Fe=Ht();else oe=a;oe!==a?(Fe=Xt(),Fe!==a?(Ze=A,A=zn(oe)):(H=A,A=a)):(H=A,A=a)}else H=A,A=a;else H=A,A=a;return A}function qt(){var A,V,K,oe;if(A=H,e.substr(H,2)===Oe?(V=Oe,H+=2):(V=a,Se===0&&Me(We)),V!==a){for(K=[],oe=e.charAt(H),Re.test(oe)?H++:(oe=a,Se===0&&Me(at));oe!==a;)K.push(oe),oe=e.charAt(H),Re.test(oe)?H++:(oe=a,Se===0&&Me(at));V=[V,K],A=V}else H=A,A=a;return A}function Bs(){var A,V,K,oe,Fe,it,vt,Nt;if(A=H,e.substr(H,3)===Je?(V=Je,H+=3):(V=a,Se===0&&Me(St)),V!==a)if(Be(),e.charCodeAt(H)===91?(K=F,H++):(K=a,Se===0&&Me(qe)),K!==a)if(Be(),oe=Zt(),oe!==a){for(Fe=[],it=H,vt=Bt(),vt!==a?(Nt=Zt(),Nt!==a?(Ze=it,it=tn(oe,Nt)):(H=it,it=a)):(H=it,it=a);it!==a;)Fe.push(it),it=H,vt=Bt(),vt!==a?(Nt=Zt(),Nt!==a?(Ze=it,it=tn(oe,Nt)):(H=it,it=a)):(H=it,it=a);it=Be(),e.charCodeAt(H)===93?(vt=k,H++):(vt=a,Se===0&&Me(kt)),vt!==a?(Ze=A,A=Un(oe,Fe)):(H=A,A=a)}else H=A,A=a;else H=A,A=a;else H=A,A=a;return A}function Xs(){var A;return A=Bs(),A===a&&(A=As()),A}function Zt(){var A,V,K,oe,Fe;if(A=H,V=Xs(),V!==a){for(Be(),K=[],oe=qt();oe!==a;)K.push(oe),oe=qt();Ze=A,A=On(V)}else H=A,A=a;return A===a&&(A=H,V=Fs(),V!==a?(Be(),e.charCodeAt(H)===36?(K=st,H++):(K=a,Se===0&&Me(Et)),K!==a?(oe=Be(),Fe=Zt(),Fe!==a?(Ze=A,A=Hn(V,Fe)):(H=A,A=a)):(H=A,A=a)):(H=A,A=a)),A}function Ts(){var A,V;return A=H,V=Zt(),V!==a&&(Ze=A,V=$n(V)),A=V,A===a&&(A=qt()),A}function Zs(){var A;return A=Ts(),A}function Ns(){var A,V;return A=H,Be(),V=Ps(),V===a&&(V=Vs(),V===a&&(V=Is())),V!==a?(Be(),Ze=A,A=Yn(V)):(H=A,A=a),A}function Ps(){var A,V,K;return A=H,e.substr(H,6)===ye?(V=ye,H+=6):(V=a,Se===0&&Me(Wt)),V!==a?(Be(),K=Ft(),K!==a?(Ze=A,A=Kn(K)):(H=A,A=a)):(H=A,A=a),A}function Vs(){var A,V,K;return A=H,e.substr(H,6)===Qe?(V=Qe,H+=6):(V=a,Se===0&&Me(zt)),V!==a?(Be(),K=Ft(),K!==a?(Ze=A,A=Jn(K)):(H=A,A=a)):(H=A,A=a),A}function Is(){var A,V;return A=H,e.substr(H,4)===pt?(V=pt,H+=4):(V=a,Se===0&&Me(bt)),V!==a&&(Ze=A,V=jn()),A=V,A}function Ws(){var A;return A=Zs(),A===a&&(A=Ns()),A}var zs=function(A){this.type_="atom",this.source_=A,this.location_=nn()},$t=function(A,V,K,oe){this.type_="pattern",this.arguments_={alignment:V,_steps:oe},K!==void 0&&(this.arguments_.seed=K),this.source_=A},Us=function(A,V,K){this.type_=A,this.arguments_=V,this.source_=K},Os=function(A,V){this.type_="element",this.source_=A,this.options_=V,this.location_=nn()},Qt=function(A,V){this.type_="command",this.name_=A,this.options_=V},en=0;if(Pt=l(),t.peg$library)return{peg$result:Pt,peg$currPos:H,peg$FAILED:a,peg$maxFailExpected:Ut,peg$maxFailPos:Gt};if(Pt!==a&&H===e.length)return Pt;throw Pt!==a&&H<e.length&&Me(Qn()),es(Ut,Gt<e.length?e.charAt(Gt):null,Gt<e.length?jt(Gt,Gt+1):jt(Gt,Gt))}const peg$allowedStartRules=["start"],randOffset=3e-4,applyOptions=(e,t)=>(a,o)=>{const f=e.source_[o].options_?.ops,p=a.__steps_source;if(f)for(const g of f)switch(g.type_){case"stretch":{const d=["fast","slow"],{type:b,amount:F}=g.arguments_;if(!d.includes(b))throw new Error(`mini: stretch: type must be one of ${d.join("|")} but got ${b}`);a=reify(a)[b](t(F));break}case"replicate":{const{amount:d}=g.arguments_;a=reify(a),a=a._repeatCycles(d)._fast(d);break}case"bjorklund":{g.arguments_.rotation?a=a.euclidRot(t(g.arguments_.pulse),t(g.arguments_.step),t(g.arguments_.rotation)):a=a.euclid(t(g.arguments_.pulse),t(g.arguments_.step));break}case"degradeBy":{a=reify(a)._degradeByWith(rand.early(randOffset*g.arguments_.seed),g.arguments_.amount??.5);break}case"tail":{const d=t(g.arguments_.element);a=a.fmap(b=>F=>Array.isArray(b)?[...b,F]:[b,F]).appLeft(d);break}case"range":{const d=t(g.arguments_.element);a=reify(a);const b=(k,E,R=1)=>Array.from({length:Math.abs(E-k)/R+1},(L,N)=>k<E?k+N*R:k-N*R);a=((k,E)=>k.squeezeBind(R=>E.bind(L=>fastcat(...b(R,L)))))(a,d);break}default:console.warn(`operator "${g.type_}" not implemented`)}return a.__steps_source=a.__steps_source||p,a};function patternifyAST(e,t,a,o=0){a?.(e);const u=l=>patternifyAST(l,t,a,o);switch(e.type_){case"pattern":{const l=e.source_.map(d=>u(d)).map(applyOptions(e,u)),f=e.arguments_.alignment,p=l.filter(d=>d.__steps_source);let g;switch(f){case"stack":{g=stack(...l),p.length&&(g._steps=lcm(...p.map(d=>Fraction(d._steps))));break}case"polymeter_slowcat":{g=stack(...l.map(d=>d._slow(d.__weight))),p.length&&(g._steps=lcm(...p.map(d=>Fraction(d._steps))));break}case"polymeter":{const d=e.arguments_.stepsPerCycle?u(e.arguments_.stepsPerCycle).fmap(F=>Fraction(F)):pure(Fraction(l.length>0?l[0].__weight:1)),b=l.map(F=>F.fast(d.fmap(k=>k.div(F.__weight))));g=stack(...b);break}case"rand":{g=chooseInWith(rand.early(randOffset*e.arguments_.seed).segment(1),l),p.length&&(g._steps=lcm(...p.map(d=>Fraction(d._steps))));break}case"feet":{g=fastcat(...l);break}default:{if(e.source_.some(b=>!!b.options_?.weight)){const b=e.source_.reduce((F,k)=>F.add(k.options_?.weight||Fraction(1)),Fraction(0));g=timeCat(...e.source_.map((F,k)=>[F.options_?.weight||Fraction(1),l[k]])),g.__weight=b,g._steps=b,p.length&&(g._steps=g._steps.mul(lcm(...p.map(F=>Fraction(F._steps)))))}else g=sequence(...l),g._steps=l.length;e.arguments_._steps&&(g.__steps_source=!0)}}return p.length&&(g.__steps_source=!0),g}case"element":return u(e.source_);case"atom":{if(e.source_==="~"||e.source_==="-")return silence;if(!e.location_)return console.warn("no location for",e),e.source_;const l=isNaN(Number(e.source_))?e.source_:Number(e.source_);if(o===-1)return pure(l);const[f,p]=getLeafLocation(t,e,o);return pure(l).withLoc(f,p)}case"stretch":return u(e.source_).slow(u(e.arguments_.amount));default:return console.warn(`node type "${e.type_}" not implemented -> returning silence`),silence}}const getLeafLocation=(e,t,a=0)=>{const{start:o,end:u}=t.location_,l=e?.split("").slice(o.offset,u.offset).join(""),[f=0,p=0]=l?l.split(t.source_).map(g=>g.split("").filter(d=>d===" ").length):[];return[o.offset+f+a,u.offset-p+a]},mini2ast=(e,t=0,a=e)=>{try{return peg$parse(e)}catch(o){const u=[o.location.start.offset+t,o.location.end.offset+t],l=a.slice(0,u[0]).split(`
-`).length;throw new Error(`[mini] parse error at line ${l}: ${o.message}`)}},getLeaves=(e,t,a)=>{const o=mini2ast(e,t,a);let u=[];return patternifyAST(o,e,l=>{l.type_==="atom"&&u.push(l)},-1),u},getLeafLocations=(e,t=0,a)=>getLeaves(e,t,a).map(o=>getLeafLocation(e,o,t)),mini=(...e)=>{const t=e.map(a=>{const o=`"${a}"`,u=mini2ast(o);return patternifyAST(u,o)});return sequence(...t)},m=(e,t)=>{const a=`"${e}"`,o=mini2ast(a);return patternifyAST(o,a,null,t)},h=e=>{const t=mini2ast(e);return patternifyAST(t,e)};function minify(e){return typeof e=="string"?mini(e):reify(e)}function miniAllStrings(){setStringParser(mini)}const index=Object.freeze(Object.defineProperty({__proto__:null,StartRules:peg$allowedStartRules,SyntaxError:peg$SyntaxError,getLeafLocation,getLeafLocations,getLeaves,h,m,mini,mini2ast,miniAllStrings,minify,parse:peg$parse,patternifyAST},Symbol.toStringTag,{value:"Module"})),languageLiteral={walk:e=>({enter:function(t,a,o,u){if(!isLanguageLiteral(t))return;e.miniLocations??=[];const{options:l,miniLocations:f}=e,{emitMiniLocations:p}=l,{name:g}=t.tag,d=getLanguages().get(g),b=t.quasi.quasis[0].value.raw,F=t.quasi.start+1;if(p){const k=d.getLocations(b,F);f.push(...k)}return this.skip(),this.replace(languageWithLocation(g,b,F))}})},tidal={walk:e=>({enter:function(t,a,o,u){if(!isTemplateLiteral(t,"tidal"))return;e.miniLocations??=[];const{options:l,miniLocations:f}=e,{emitMiniLocations:p}=l,g=t.quasi.quasis[0].value.raw,d=t.quasi.start+1;if(p){const b=collectHaskellMiniLocations(g,d);f.push(...b)}return this.skip(),this.replace(tidalWithLocation(g,d))}})},backtick={walk:e=>({enter:function(t,a,o,u){if(!isBackTickString(t,a))return;e.miniLocations??=[];const{options:l,input:f,miniDisableRanges:p,miniLocations:g}=e,{emitMiniLocations:d}=l;if(isMiniDisabled(t.start,p))return;const{quasis:b}=t,{raw:F}=b[0].value;return this.skip(),d&&collectMiniLocations(F,t,g,f),this.replace(miniWithLocation(F,t))}})},doublequotes={walk:e=>({enter:function(t,a,o,u){if(!isStringWithDoubleQuotes(t))return;e.miniLocations??=[];const{options:l,input:f,miniDisableRanges:p,miniLocations:g}=e,{emitMiniLocations:d}=l;if(isMiniDisabled(t.start,p))return;const{value:b}=t;return this.skip(),d&&collectMiniLocations(b,t,g,f),this.replace(miniWithLocation(b,t))}})};function isLanguageLiteral(e){return e.type==="TaggedTemplateExpression"&&getLanguages().has(e.tag.name)}function languageWithLocation(e,t,a){return{type:"CallExpression",callee:{type:"Identifier",name:e},arguments:[{type:"Literal",value:t},{type:"Literal",value:a}],optional:!1}}function collectHaskellMiniLocations(e,t){return e.split("").reduce((a,o,u)=>(o!=='"'||(!a.length||a[a.length-1].length>1?a.push([u+1]):a[a.length-1].push(u)),a),[]).map(([a,o])=>{const u=e.slice(a,o);return getLeafLocations(`"${u}"`,t+a-1)}).flat()}function isTemplateLiteral(e,t){return e.type==="TaggedTemplateExpression"&&e.tag.name===t}function tidalWithLocation(e,t){return{type:"CallExpression",callee:{type:"Identifier",name:"tidal"},arguments:[{type:"Literal",value:e},{type:"Literal",value:t}],optional:!1}}function isBackTickString(e,t){return e.type==="TemplateLiteral"&&t.type!=="TaggedTemplateExpression"}function isMiniDisabled(e,t){for(const[a,o]of t)if(e>=a&&e<o)return!0;return!1}function miniWithLocation(e,t){const{start:a}=t,o=getLanguages().get("minilang");let u="m";return o&&o.name&&(u=o.name),{type:"CallExpression",callee:{type:"Identifier",name:u},arguments:[{type:"Literal",value:e},{type:"Literal",value:a}],optional:!1}}const collectMiniLocations=(e,t,a,o)=>{const u=getLanguages().get("minilang");if(u){const l=`[${e}]`,f=u.getLocations(l,t.start);a.push(...f)}else{const l=getLeafLocations(`"${e}"`,t.start,o);a.push(...l)}};function isStringWithDoubleQuotes(e,t,a){return e.type!=="Literal"?!1:e.raw[0]==='"'}registerTranspilerPlugin([languageLiteral,tidal,backtick,doublequotes]);function withAwait(e){return{type:"AwaitExpression",argument:e}}const bareSample={walk:e=>({enter:function(t,a,o,u){isBareSamplesCall(t,a)&&this.replace(withAwait(t))}})};function isBareSamplesCall(e,t){return e.type==="CallExpression"&&e.callee.name==="samples"&&t.type!=="AwaitExpression"}registerTranspilerPlugin(bareSample);let widgetMethods=[];const widgetTranspilerPlugin={walk:e=>({enter:function(t,a,o,u){if(!isWidgetMethod(t))return;e.widgets??=[];const{widgets:l,options:f}=e,{emitWidgets:p}=f,g=t.callee.property.name,d=l.filter(F=>F.type===g).length,b={from:t.start,to:t.end,index:d,type:g,id:f.id};return p&&l.push(b),this.replace(widgetWithLocation(t,b))}})},sliderTranspilerPlugin={walk:e=>({enter:function(t,a,o,u){if(!isSliderFunction(t))return;e.widgets??=[],e.sliders??=[];const{options:l,widgets:f,sliders:p,nodeOffset:g}=e,{emitWidgets:d}=l,b=t.arguments[0].start+g,F=t.arguments[0].end+g,k=`${b}:${F}`,E={from:b,to:F,id:k,value:t.arguments[0].raw,min:t.arguments[1]?.value??0,max:t.arguments[2]?.value??1,step:t.arguments[3]?.value,type:"slider"};return d&&f.push(E),p.push(E),this.replace(sliderWithLocation(t,g))}})},widgetTranspilerPlugins=[sliderTranspilerPlugin,widgetTranspilerPlugin];function isSliderFunction(e){return e.type==="CallExpression"&&e.callee.name==="slider"}function isWidgetMethod(e){return e.type==="CallExpression"&&widgetMethods.includes(e.callee.property?.name)}function sliderWithLocation(e,t=0){const a=e.arguments[0].start+t,o=e.arguments[0].end+t,u=`${a}:${o}`;return e.arguments.unshift({type:"Literal",value:u,raw:u}),e.callee.name="sliderWithID",e}function getWidgetID(e){let t;return e.from!==void 0&&e.to!==void 0?t=`${e.from}-${e.to}`:t=e.to||e.from||0,`${`${e.id||""}_widget_${e.type}`}_${e.index}_${t}`}function widgetWithLocation(e,t){const a=getWidgetID(t);return t.id=a,e.arguments.unshift({type:"Literal",value:a,raw:a}),e}registerTranspilerPlugin(widgetTranspilerPlugins);const files=Object.assign({"./tracks/half-past-dawn.txt":__vite_glob_0_0,"./tracks/liquid-toolbox.txt":__vite_glob_0_1,"./tracks/low-tide-radio.txt":__vite_glob_0_2,"./tracks/ossuary.txt":__vite_glob_0_3,"./tracks/paper-lanterns.txt":__vite_glob_0_4,"./tracks/slow-weather.txt":__vite_glob_0_5,"./tracks/sodium-halo.txt":__vite_glob_0_6,"./tracks/wolves-at-the-fence.txt":__vite_glob_0_7}),tracks=Object.entries(files).map(([e,t])=>({title:(t.match(/^\/\/\s*"([^"]+)"/m)||[])[1]||e.split("/").pop(),code:t,path:e})).sort((e,t)=>(e.title==="Liquid Toolbox")-(t.title==="Liquid Toolbox")||e.title.localeCompare(t.title));getDrawContext("test-canvas",{pixelRatio:1});for(const e of["pianoroll","scope","punchcard","spiral","pitchwheel"])Pattern$1.prototype["_"+e]||(Pattern$1.prototype["_"+e]=function(...t){return this[e]?this[e](...t):this});let visuals=!0;const stripVisuals=e=>visuals?e:e.replace(/\._?(pianoroll|scope|tscope|punchcard|spiral|pitchwheel)\([^)]*\)/g,""),slider=e=>e,CDN="https://strudel.b-cdn.net";let audioInit;const ensureAudio=()=>audioInit??=initAudio();miniAllStrings();const repl=repl$2({defaultOutput:webaudioOutput,getTime:()=>getAudioContext().currentTime,transpiler,beforeEval:()=>cleanupDraw(!0),onToggle:e=>{e||cleanupDraw(!0),setState(e)}});setTime(()=>repl.scheduler.now());const hush=()=>repl.stop(),evaluate=(e,t=!0)=>repl.evaluate(stripVisuals(e),t),ready=(async()=>{await evalScope(__vitePreload(()=>Promise.resolve().then(()=>strudel),void 0,import.meta.url),__vitePreload(()=>Promise.resolve().then(()=>index),void 0,import.meta.url),__vitePreload(()=>import("./index-DxW6u7iR.js"),[],import.meta.url),__vitePreload(()=>import("./index-hASWm2V4.js"),[],import.meta.url),__vitePreload(()=>Promise.resolve().then(()=>index$1),void 0,import.meta.url),__vitePreload(()=>import("./index-CVLuLHBy.js"),[],import.meta.url),{hush,evaluate,slider}),await Promise.all([registerSynthSounds(),registerSoundfonts(),samples(`${CDN}/piano.json`,`${CDN}/piano/`,{prebake:!0}),samples(`${CDN}/tidal-drum-machines.json`,`${CDN}/tidal-drum-machines/machines/`,{prebake:!0,tag:"drum-machines"})]),aliasBank(`${CDN}/tidal-drum-machines-alias.json`)})(),$=e=>document.getElementById(e),code=$("code"),log=$("log"),state=$("state"),nav=$("tracks");let current=-1;function setState(e){state.textContent=e?"playing":"stopped",state.classList.toggle("on",e)}function say(e,t=""){const a=document.createElement("div");for(a.textContent=e,t&&(a.className=t),log.appendChild(a);log.childElementCount>3;)log.removeChild(log.firstChild)}document.addEventListener(logger$2.key,e=>{const t=e.detail.message;say(t,/error/i.test(t)?"err":"")});nav.replaceChildren(...tracks.map((e,t)=>{const a=document.createElement("a");return a.innerHTML=`<i>${t+1})</i>${e.title}`,a.onclick=()=>load(t),a}));function load(e){current=(e+tracks.length)%tracks.length,code.value=tracks[current].code,[...nav.children].forEach((t,a)=>t.classList.toggle("active",a===current)),say(`loaded ${tracks[current].title}`,"ok"),code.scrollTop=0}async function play(){try{await ready,await ensureAudio(),await evaluate(code.value),setState(!0)}catch(e){say(`error: ${e.message}`,"err")}}function stop(){hush(),setState(!1)}$("play").onclick=play;$("stop").onclick=stop;window.addEventListener("keydown",e=>{(e.ctrlKey||e.metaKey)&&(e.key==="Enter"?(e.preventDefault(),play()):e.key==="."?(e.preventDefault(),stop()):e.key==="ArrowDown"?(e.preventDefault(),load(current+1)):e.key==="ArrowUp"?(e.preventDefault(),load(current-1)):e.shiftKey&&e.key.toLowerCase()==="v"&&(e.preventDefault(),visuals=!visuals,say(`visuals ${visuals?"on":"off"} (takes effect on next play)`,"ok")))});const pick=parseInt(location.hash.slice(1),10);load(Number.isInteger(pick)&&pick>0?pick-1:0);ready.then(()=>say("engine ready. pick a track, ctrl+enter to play.","ok")).catch(e=>say(`init failed: ${e.message}`,"err"));export{errorLogger as $,onceEnded as A,releaseAudioNode as B,ClockBridge as C,Drawer as D,DEFAULT_MAX_POLYPHONY as E,Framer as F,aliasBank as G,analysers as H,analysersData as I,applyFM as J,applyGainCurve as K,applyParameterModulators as L,cleanupOnEnd as M,connectBusModulator as N,connectEnvelope as O,connectLFO as P,connectToDestination as Q,createFilter as R,distortionAlgorithms as S,drawFrequencyScope as T,drawTimeScope as U,drywet as V,Warpmode as W,dspWorklet as X,effectSend as Y,ensureMinimalOutput as Z,__pianoroll as _,angle as a,setLogger as a$,expDecay as a0,gainNode as a1,getADSRValues as a2,getAnalyserById as a3,getAnalyzerData as a4,getAudioContextCurrentTime as a5,getAudioDevices as a6,getCachedBuffer as a7,getClockBridge as a8,getCompressor as a9,multiChannelOrbits as aA,noises as aB,onTriggerSample as aC,onTriggerSynth as aD,processSampleMap as aE,rawdsp as aF,rawdspTrigger as aG,registerSampleSource as aH,registerSamplesPrefix as aI,registerSynthSounds as aJ,registerWaveTable as aK,registerWorklet as aL,renderPatternAudio as aM,resetDefaultValues as aN,resetDefaults as aO,resetGlobalEffects as aP,resetLoadedSounds as aQ,resetSeenKeys as aR,reverseBuffer as aS,samples as aT,scheduleAtTime as aU,setAudioContext as aV,setDefault as aW,setDefaultAudioContext as aX,setDefaultValue as aY,setDefaultValues as aZ,setGainCurve as a_,getDefaultValue as aa,getDistortion as ab,getDistortionAlgorithm as ac,getDur as ad,getDuration as ae,getEnvelope as af,getFrequencyFromValue as ag,getLfo as ah,getLoadedBuffer as ai,getOscillator as aj,getParamADSR as ak,getParamLfo as al,getPitchEnvelope as am,getSampleBuffer as an,getSampleBufferSource as ao,getSampleInfo as ap,getSound as aq,getSuperdoughAudioController as ar,getVibratoOscillator as as,getWorklet as at,initAudio as au,initAudioOnFirstClick as av,loadBuffer$1 as aw,loadWorklets as ax,logger$1 as ay,maxPolyphony as az,cleanupDrawContext as b,setMaxPolyphony as b0,setMultiChannelOrbits as b1,setSuperdoughAudioController as b2,setVersionDefaults as b3,soundAlias as b4,soundMap$1 as b5,superdough as b6,superdoughTrigger as b7,supradoughsamples as b8,tables as b9,waveformN as ba,webAudioTimeout as bb,webaudioOutput as bc,webaudioRepl as bd,_mod$2 as be,noteToMidi$1 as bf,register as bg,logger$2 as bh,isNote as bi,errorLogger$1 as bj,removeUndefineds as bk,getAccidentalsOffset$1 as bl,getAugmentedNamespace as bm,getDefaultExportFromCjs as bn,stack as bo,silence as bp,cleanupDraw as c,drawPianoroll as d,getDrawContext as e,fill as f,getComputedPropertyValue as g,getDrawOptions as h,getPunchcardPainter as i,getTheme as j,h$1 as k,pitchwheel as l,moveXY as m,rescale as n,smear as o,pianoroll as p,getAudioContext as q,r,setTheme as s,noteToMidi as t,midiToFreq as u,registerSound as v,w,x$1 as x,y,zoomIn as z};
+`).length;throw new Error(`[mini] parse error at line ${l}: ${o.message}`)}},getLeaves=(e,t,a)=>{const o=mini2ast(e,t,a);let u=[];return patternifyAST(o,e,l=>{l.type_==="atom"&&u.push(l)},-1),u},getLeafLocations=(e,t=0,a)=>getLeaves(e,t,a).map(o=>getLeafLocation(e,o,t)),mini=(...e)=>{const t=e.map(a=>{const o=`"${a}"`,u=mini2ast(o);return patternifyAST(u,o)});return sequence(...t)},m=(e,t)=>{const a=`"${e}"`,o=mini2ast(a);return patternifyAST(o,a,null,t)},h=e=>{const t=mini2ast(e);return patternifyAST(t,e)};function minify(e){return typeof e=="string"?mini(e):reify(e)}function miniAllStrings(){setStringParser(mini)}const index=Object.freeze(Object.defineProperty({__proto__:null,StartRules:peg$allowedStartRules,SyntaxError:peg$SyntaxError,getLeafLocation,getLeafLocations,getLeaves,h,m,mini,mini2ast,miniAllStrings,minify,parse:peg$parse,patternifyAST},Symbol.toStringTag,{value:"Module"})),languageLiteral={walk:e=>({enter:function(t,a,o,u){if(!isLanguageLiteral(t))return;e.miniLocations??=[];const{options:l,miniLocations:f}=e,{emitMiniLocations:p}=l,{name:g}=t.tag,d=getLanguages().get(g),b=t.quasi.quasis[0].value.raw,F=t.quasi.start+1;if(p){const k=d.getLocations(b,F);f.push(...k)}return this.skip(),this.replace(languageWithLocation(g,b,F))}})},tidal={walk:e=>({enter:function(t,a,o,u){if(!isTemplateLiteral(t,"tidal"))return;e.miniLocations??=[];const{options:l,miniLocations:f}=e,{emitMiniLocations:p}=l,g=t.quasi.quasis[0].value.raw,d=t.quasi.start+1;if(p){const b=collectHaskellMiniLocations(g,d);f.push(...b)}return this.skip(),this.replace(tidalWithLocation(g,d))}})},backtick={walk:e=>({enter:function(t,a,o,u){if(!isBackTickString(t,a))return;e.miniLocations??=[];const{options:l,input:f,miniDisableRanges:p,miniLocations:g}=e,{emitMiniLocations:d}=l;if(isMiniDisabled(t.start,p))return;const{quasis:b}=t,{raw:F}=b[0].value;return this.skip(),d&&collectMiniLocations(F,t,g,f),this.replace(miniWithLocation(F,t))}})},doublequotes={walk:e=>({enter:function(t,a,o,u){if(!isStringWithDoubleQuotes(t))return;e.miniLocations??=[];const{options:l,input:f,miniDisableRanges:p,miniLocations:g}=e,{emitMiniLocations:d}=l;if(isMiniDisabled(t.start,p))return;const{value:b}=t;return this.skip(),d&&collectMiniLocations(b,t,g,f),this.replace(miniWithLocation(b,t))}})};function isLanguageLiteral(e){return e.type==="TaggedTemplateExpression"&&getLanguages().has(e.tag.name)}function languageWithLocation(e,t,a){return{type:"CallExpression",callee:{type:"Identifier",name:e},arguments:[{type:"Literal",value:t},{type:"Literal",value:a}],optional:!1}}function collectHaskellMiniLocations(e,t){return e.split("").reduce((a,o,u)=>(o!=='"'||(!a.length||a[a.length-1].length>1?a.push([u+1]):a[a.length-1].push(u)),a),[]).map(([a,o])=>{const u=e.slice(a,o);return getLeafLocations(`"${u}"`,t+a-1)}).flat()}function isTemplateLiteral(e,t){return e.type==="TaggedTemplateExpression"&&e.tag.name===t}function tidalWithLocation(e,t){return{type:"CallExpression",callee:{type:"Identifier",name:"tidal"},arguments:[{type:"Literal",value:e},{type:"Literal",value:t}],optional:!1}}function isBackTickString(e,t){return e.type==="TemplateLiteral"&&t.type!=="TaggedTemplateExpression"}function isMiniDisabled(e,t){for(const[a,o]of t)if(e>=a&&e<o)return!0;return!1}function miniWithLocation(e,t){const{start:a}=t,o=getLanguages().get("minilang");let u="m";return o&&o.name&&(u=o.name),{type:"CallExpression",callee:{type:"Identifier",name:u},arguments:[{type:"Literal",value:e},{type:"Literal",value:a}],optional:!1}}const collectMiniLocations=(e,t,a,o)=>{const u=getLanguages().get("minilang");if(u){const l=`[${e}]`,f=u.getLocations(l,t.start);a.push(...f)}else{const l=getLeafLocations(`"${e}"`,t.start,o);a.push(...l)}};function isStringWithDoubleQuotes(e,t,a){return e.type!=="Literal"?!1:e.raw[0]==='"'}registerTranspilerPlugin([languageLiteral,tidal,backtick,doublequotes]);function withAwait(e){return{type:"AwaitExpression",argument:e}}const bareSample={walk:e=>({enter:function(t,a,o,u){isBareSamplesCall(t,a)&&this.replace(withAwait(t))}})};function isBareSamplesCall(e,t){return e.type==="CallExpression"&&e.callee.name==="samples"&&t.type!=="AwaitExpression"}registerTranspilerPlugin(bareSample);let widgetMethods=[];const widgetTranspilerPlugin={walk:e=>({enter:function(t,a,o,u){if(!isWidgetMethod(t))return;e.widgets??=[];const{widgets:l,options:f}=e,{emitWidgets:p}=f,g=t.callee.property.name,d=l.filter(F=>F.type===g).length,b={from:t.start,to:t.end,index:d,type:g,id:f.id};return p&&l.push(b),this.replace(widgetWithLocation(t,b))}})},sliderTranspilerPlugin={walk:e=>({enter:function(t,a,o,u){if(!isSliderFunction(t))return;e.widgets??=[],e.sliders??=[];const{options:l,widgets:f,sliders:p,nodeOffset:g}=e,{emitWidgets:d}=l,b=t.arguments[0].start+g,F=t.arguments[0].end+g,k=`${b}:${F}`,E={from:b,to:F,id:k,value:t.arguments[0].raw,min:t.arguments[1]?.value??0,max:t.arguments[2]?.value??1,step:t.arguments[3]?.value,type:"slider"};return d&&f.push(E),p.push(E),this.replace(sliderWithLocation(t,g))}})},widgetTranspilerPlugins=[sliderTranspilerPlugin,widgetTranspilerPlugin];function isSliderFunction(e){return e.type==="CallExpression"&&e.callee.name==="slider"}function isWidgetMethod(e){return e.type==="CallExpression"&&widgetMethods.includes(e.callee.property?.name)}function sliderWithLocation(e,t=0){const a=e.arguments[0].start+t,o=e.arguments[0].end+t,u=`${a}:${o}`;return e.arguments.unshift({type:"Literal",value:u,raw:u}),e.callee.name="sliderWithID",e}function getWidgetID(e){let t;return e.from!==void 0&&e.to!==void 0?t=`${e.from}-${e.to}`:t=e.to||e.from||0,`${`${e.id||""}_widget_${e.type}`}_${e.index}_${t}`}function widgetWithLocation(e,t){const a=getWidgetID(t);return t.id=a,e.arguments.unshift({type:"Literal",value:a,raw:a}),e}registerTranspilerPlugin(widgetTranspilerPlugins);const files=Object.assign({"./tracks/half-past-dawn.txt":__vite_glob_0_0,"./tracks/liquid-toolbox.txt":__vite_glob_0_1,"./tracks/low-tide-radio.txt":__vite_glob_0_2,"./tracks/ossuary.txt":__vite_glob_0_3,"./tracks/paper-lanterns.txt":__vite_glob_0_4,"./tracks/slow-weather.txt":__vite_glob_0_5,"./tracks/sodium-halo.txt":__vite_glob_0_6,"./tracks/wolves-at-the-fence.txt":__vite_glob_0_7}),tracks=Object.entries(files).map(([e,t])=>({title:(t.match(/^\/\/\s*"([^"]+)"/m)||[])[1]||e.split("/").pop(),code:t,path:e})).sort((e,t)=>(e.title==="Liquid Toolbox")-(t.title==="Liquid Toolbox")||e.title.localeCompare(t.title));getDrawContext("test-canvas",{pixelRatio:1});for(const e of["pianoroll","scope","punchcard","spiral","pitchwheel"])Pattern$1.prototype["_"+e]||(Pattern$1.prototype["_"+e]=function(...t){return this[e]?this[e](...t):this});let visuals=!0;const stripVisuals=e=>visuals?e:e.replace(/\._?(pianoroll|scope|tscope|punchcard|spiral|pitchwheel)\([^)]*\)/g,""),slider=e=>e,CDN="https://strudel.b-cdn.net";let audioInit;const ensureAudio=()=>audioInit??=initAudio();miniAllStrings();const repl=repl$2({defaultOutput:webaudioOutput,getTime:()=>getAudioContext().currentTime,transpiler,beforeEval:()=>cleanupDraw(!0),onToggle:e=>{e||cleanupDraw(!0),setState(e)}});setTime(()=>repl.scheduler.now());const hush=()=>repl.stop(),evaluate=(e,t=!0)=>repl.evaluate(stripVisuals(e),t),ready=(async()=>{await evalScope(__vitePreload(()=>Promise.resolve().then(()=>strudel),void 0,import.meta.url),__vitePreload(()=>Promise.resolve().then(()=>index),void 0,import.meta.url),__vitePreload(()=>import("./index-C1FoIDvJ.js"),[],import.meta.url),__vitePreload(()=>import("./index-l6ACGSCg.js"),[],import.meta.url),__vitePreload(()=>Promise.resolve().then(()=>index$1),void 0,import.meta.url),__vitePreload(()=>import("./index-CvXWuOvv.js"),[],import.meta.url),{hush,evaluate,slider}),await Promise.all([registerSynthSounds(),registerSoundfonts(),samples(`${CDN}/piano.json`,`${CDN}/piano/`,{prebake:!0}),samples(`${CDN}/tidal-drum-machines.json`,`${CDN}/tidal-drum-machines/machines/`,{prebake:!0,tag:"drum-machines"})]),aliasBank(`${CDN}/tidal-drum-machines-alias.json`)})(),$=e=>document.getElementById(e),code=$("code"),log=$("log"),state=$("state"),nav=$("tracks");let current=-1;function setState(e){state.textContent=e?"playing":"stopped",state.classList.toggle("on",e)}function say(e,t=""){const a=document.createElement("div");for(a.textContent=e,t&&(a.className=t),log.appendChild(a);log.childElementCount>3;)log.removeChild(log.firstChild)}document.addEventListener(logger$2.key,e=>{const t=e.detail.message;say(t,/error/i.test(t)?"err":"")});nav.replaceChildren(...tracks.map((e,t)=>{const a=document.createElement("a");return a.innerHTML=`<i>${t+1})</i>${e.title}`,a.onclick=()=>load(t),a}));function load(e){current=(e+tracks.length)%tracks.length,code.value=tracks[current].code,[...nav.children].forEach((t,a)=>t.classList.toggle("active",a===current)),say(`loaded ${tracks[current].title}`,"ok"),code.scrollTop=0}async function play(){try{await ready,await ensureAudio(),await evaluate(code.value),setState(!0)}catch(e){say(`error: ${e.message}`,"err")}}function stop(){hush(),setState(!1)}$("play").onclick=play;$("stop").onclick=stop;window.addEventListener("keydown",e=>{(e.ctrlKey||e.metaKey)&&(e.key==="Enter"?(e.preventDefault(),play()):e.key==="."?(e.preventDefault(),stop()):e.key==="ArrowDown"?(e.preventDefault(),load(current+1)):e.key==="ArrowUp"?(e.preventDefault(),load(current-1)):e.shiftKey&&e.key.toLowerCase()==="v"&&(e.preventDefault(),visuals=!visuals,say(`visuals ${visuals?"on":"off"} (takes effect on next play)`,"ok")))});const pick=parseInt(location.hash.slice(1),10);load(Number.isInteger(pick)&&pick>0?pick-1:0);ready.then(()=>say("engine ready. pick a track, ctrl+enter to play.","ok")).catch(e=>say(`init failed: ${e.message}`,"err"));export{errorLogger as $,onceEnded as A,releaseAudioNode as B,ClockBridge as C,Drawer as D,DEFAULT_MAX_POLYPHONY as E,Framer as F,aliasBank as G,analysers as H,analysersData as I,applyFM as J,applyGainCurve as K,applyParameterModulators as L,cleanupOnEnd as M,connectBusModulator as N,connectEnvelope as O,connectLFO as P,connectToDestination as Q,createFilter as R,distortionAlgorithms as S,drawFrequencyScope as T,drawTimeScope as U,drywet as V,Warpmode as W,dspWorklet as X,effectSend as Y,ensureMinimalOutput as Z,__pianoroll as _,angle as a,setLogger as a$,expDecay as a0,gainNode as a1,getADSRValues as a2,getAnalyserById as a3,getAnalyzerData as a4,getAudioContextCurrentTime as a5,getAudioDevices as a6,getCachedBuffer as a7,getClockBridge as a8,getCompressor as a9,multiChannelOrbits as aA,noises as aB,onTriggerSample as aC,onTriggerSynth as aD,processSampleMap as aE,rawdsp as aF,rawdspTrigger as aG,registerSampleSource as aH,registerSamplesPrefix as aI,registerSynthSounds as aJ,registerWaveTable as aK,registerWorklet as aL,renderPatternAudio as aM,resetDefaultValues as aN,resetDefaults as aO,resetGlobalEffects as aP,resetLoadedSounds as aQ,resetSeenKeys as aR,reverseBuffer as aS,samples as aT,scheduleAtTime as aU,setAudioContext as aV,setDefault as aW,setDefaultAudioContext as aX,setDefaultValue as aY,setDefaultValues as aZ,setGainCurve as a_,getDefaultValue as aa,getDistortion as ab,getDistortionAlgorithm as ac,getDur as ad,getDuration as ae,getEnvelope as af,getFrequencyFromValue as ag,getLfo as ah,getLoadedBuffer as ai,getOscillator as aj,getParamADSR as ak,getParamLfo as al,getPitchEnvelope as am,getSampleBuffer as an,getSampleBufferSource as ao,getSampleInfo as ap,getSound as aq,getSuperdoughAudioController as ar,getVibratoOscillator as as,getWorklet as at,initAudio as au,initAudioOnFirstClick as av,loadBuffer$1 as aw,loadWorklets as ax,logger$1 as ay,maxPolyphony as az,cleanupDrawContext as b,setMaxPolyphony as b0,setMultiChannelOrbits as b1,setSuperdoughAudioController as b2,setVersionDefaults as b3,soundAlias as b4,soundMap$1 as b5,superdough as b6,superdoughTrigger as b7,supradoughsamples as b8,tables as b9,waveformN as ba,webAudioTimeout as bb,webaudioOutput as bc,webaudioRepl as bd,_mod$2 as be,noteToMidi$1 as bf,register as bg,logger$2 as bh,isNote as bi,errorLogger$1 as bj,removeUndefineds as bk,getAccidentalsOffset$1 as bl,getAugmentedNamespace as bm,getDefaultExportFromCjs as bn,stack as bo,silence as bp,cleanupDraw as c,drawPianoroll as d,getDrawContext as e,fill as f,getComputedPropertyValue as g,getDrawOptions as h,getPunchcardPainter as i,getTheme as j,h$1 as k,pitchwheel as l,moveXY as m,rescale as n,smear as o,pianoroll as p,getAudioContext as q,r,setTheme as s,noteToMidi as t,midiToFreq as u,registerSound as v,w,x$1 as x,y,zoomIn as z};
