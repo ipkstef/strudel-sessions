@@ -542,35 +542,52 @@ $: s("pink").gain(.04).lpf(150)
 $: s("crackle").density(.01).gain(.12).hpf(2000)
 `,__vite_glob_0_4=`// "Paper Lanterns" @by Stefanos Amanuel
 // @genre liquid dnb
-// @version 1.1
+// @version 2.3
 // @license CC BY-NC-SA 4.0
-// 174 bpm, A minor. Hybrid Minds style. 8-bar progression (Am9 F^7 C^9 G / Am9 F^7 Dm9 E7). 64-bar form: 8 intro / 8 build / 16 drop / 8 breakdown / 16 second drop / 8 outro. Piano broken chords, strings, re-pitched sung vocal + spoken hook (CC0 samples from freesound).
+// 174 bpm, 8-bar progression
+// (Am9 F^7 C^9 G / Am9 F^7 Dm9 E7). 64-bar form:
+//   1-8   intro      - filtered piano, spoken hook, atmosphere
+//   9-16  build      - piano full, filtered hats, riser, sub enters
+//   17-32 drop 1     - full arp, strings, reese, chipmunk vocal
+//   33-40 breakdown  - cello drone, slow pad, reversed vocal
+//   41-56 drop 2     - counter-melody, octave piano, ride, ghosts
+//   57-64 outro      - drums cut at 59, resolves to Am9 at 63
+// v2.3: softened duck from .5:.3 to .2:.15, raised drop-layer gains,
+//       1-bar break at bar 16 before drop 1, added reverse-cymbal
+//       swell into drop 1, extended crash reverb.
 
 samples('github:tidalcycles/dirt-samples')
 samples({
-  vox:    { e4: 'https://cdn.freesound.org/previews/315/315856_4557960-lq.mp3' }, // sung E, CC0 (bevibeldesign)
-  dreams: 'https://cdn.freesound.org/previews/610/610528_13509537-lq.mp3',         // "do you remember your dreams?" CC0 (Sample_Me)
-  halo:   'https://cdn.freesound.org/previews/315/315942_4557960-lq.mp3',         // long high note, CC0 (bevibeldesign)
+  vox:    { e4: 'https://cdn.freesound.org/previews/315/315856_4557960-lq.mp3' },
+  dreams: 'https://cdn.freesound.org/previews/610/610528_13509537-lq.mp3',
+  halo:   'https://cdn.freesound.org/previews/315/315942_4557960-lq.mp3',
 })
 setcpm(174/4)
 
-let chords = "<Am9 F^7 C^9 G Am9 F^7 Dm9 E7>"      // 8 bars: second half turns home through Dm9 and E7
+let chords = "<Am9 F^7 C^9 G Am9 F^7 Dm9 E7>"
 let roots  = "<a1 f1 c2 g1 a1 f1 d1 e1>"
-// arrangement masks (1 = on), 64 bars long
-// 1-8 intro / 9-16 build / 17-32 drop / 33-40 breakdown / 41-56 second drop / 57-64 outro
-let intro = "<1!8 0!56>"
-let build = "<0!8 1!8 0!48>"
-let drop  = "<0!16 1!16 0!8 1!24>"          // drums-in sections: both drops and the outro
-let drops = "<0!16 1!16 0!8 1!16 0!8>"      // the two drops only: strings, reese, chipmunk
-let drums = "<0!8 1!24 0!8 1!24>"
 
-// VOCALS -------------------------------------------------------------
-// the spoken hook, once per 8 bars in the intro, drowned in delay
-$: s("dreams").slow(8).mask("<1 0 0 0 1 0 0 0>/8")          // intro and breakdown
+// SECTION MASKS
+let intro   = "<1!8 0!56>"
+let build   = "<0!8 1!8 0!48>"
+let drop    = "<0!16 1!16 0!8 1!24>"              // drums-in sections: 17-32, 41-64
+let drops   = "<0!16 1!16 0!8 1!16 0!8>"          // drops only: 17-32, 41-56
+let drums   = "<0!8 1!7 0!1 1!16 0!8 1!22 0!2>"   // 1-bar breath at bar 16
+let drop1s  = "<0!16 1!16 0!32>"                  // drop 1 only, for the sub split
+let drop2   = "<0!40 1!16 0!8>"                   // drop 2 only
+let brk     = "<0!32 1!8 0!24>"                   // breakdown only
+let outro   = "<0!56 1!8>"                        // outro only
+
+// =====================================================================
+// VOCALS
+// =====================================================================
+
+// spoken hook - intro and outro only, drowned in delay
+$: s("dreams").slow(8).mask("<1 0 0 0 1 0 0 0>/8")
   .delay(.6).delaytime(.345).delayfeedback(.6)
   .room(.9).roomsize(8).hpf(300).gain(.9)
 
-// sung E, sliced and re-pitched to the chord tones = the hook
+// sung E, sliced and re-pitched to the chord tones = the main hook
 $: s("vox").slice(8, "<[0 ~ 2 ~ 4 ~ 1 ~] [0 ~ 2 ~ ~ 6 ~ 1]>")
   .note("<[e4 e4] [f4 e4] [e4 g4] [d4 e4] [e4 e4] [f4 e4] [f4 d4] [e4 e4]>")
   .clip(1).attack(.02).release(.15)
@@ -579,55 +596,219 @@ $: s("vox").slice(8, "<[0 ~ 2 ~ 4 ~ 1 ~] [0 ~ 2 ~ ~ 6 ~ 1]>")
   .mask("<0!4 1!60>")
   ._pianoroll()
 
-// octave-up chipmunk answer, drop only
+// octave-up chipmunk answer, drops only - louder now so it reads
 $: s("vox").slice(8, "~ ~ ~ 3 ~ ~ 5 ~").note("<a4 a4 g4 g4 a4 a4 f4 e4>")
-  .clip(1).release(.1).speed(1).gain(.45).pan(.7)
+  .clip(1).release(.1).speed(1).gain(.55).pan(.7)
   .delay(.5).delaytime(.52).delayfeedback(.4).room(.6).roomsize(5).orbit(2)
-  .mask(drops).degradeBy(.2)
+  .mask(drops).degradeBy(.08)
 
-// long angelic note as a swell into the drop
+// long angelic swell into drop 1 and into the breakdown
 $: s("halo").slow(4).mask("<0!12 1!4 0!20 1!4 0!24>")
-  .lpf(saw.slow(4).range(300, 6000)).gain(.35).room(.9).roomsize(8).pan(sine.slow(4).range(.3,.7))
+  .lpf(saw.slow(4).range(300, 6000)).gain(.35).room(.9).roomsize(8)
+  .pan(sine.slow(4).range(.3,.7))
 
-// PIANO (the Hybrid Minds engine: broken chords in 8ths) --------------
+// halo swell into drop 2
+$: s("halo").slow(4).mask("<0!36 1!4 0!24>")
+  .lpf(saw.slow(4).range(300, 6000)).gain(.35).room(.9).roomsize(8)
+  .pan(sine.slow(4).range(.3,.7))
+
+// reversed vocal in the breakdown - new texture, appears nowhere else
+$: s("vox").slice(8, "<[4 ~ 2 ~ 0 ~ ~ ~]>").speed(-1).clip(1).release(.5)
+  .delay(.6).delaytime(.69).delayfeedback(.6)
+  .room(.9).roomsize(9).hpf(300).gain(.5).orbit(2)
+  .mask(brk)
+
+// =====================================================================
+// PIANO - five treatments, sectioned
+// =====================================================================
+
+// intro: sparse, filtered, breathing
+$: chord(chords).anchor("a5").voicing().arp("0 ~ ~ ~ 3 ~ ~ ~")
+  .s("piano").velocity(.55).clip(2).attack(.05)
+  .lpf(1400).room(.8).roomsize(7).gain(.65).orbit(3)
+  .mask(intro)
+
+// main arp: build + both drops, pluck envelope, smoothed velocity
 $: chord(chords).anchor("a5").voicing().arp("0 2 3 1 0 2 3 2")
-  .s("piano").velocity("[.7 .5 .6 .5]*2").clip(1.5)
-  .room(.6).roomsize(5).delay(.25).delaytime(.345).delayfeedback(.3)
-  .gain(.8).orbit(3)
+  .s("piano")
+  .lpf(3500).lpenv(2).lpa(.005).lpd(.15).lps(0)
+  .velocity(".8 .7 .65 .7 .75 .7 .65 .6").clip(1.1)
+  .room(.55).roomsize(5).delay(.15).delaytime(.345).delayfeedback(.2)
+  .gain(.9).orbit(3)
+  .mask("<0!8 1!48 0!8>")
   ._pianoroll()
 
-// STRINGS + PAD ----------------------------------------------------------
+// weight layer - octave down, drops only
+$: chord(chords).anchor("a4").voicing().arp("0 2 3 1 0 2 3 2")
+  .s("piano").velocity(".45 .4 .38 .4 .42 .4 .38 .35").clip(1.1)
+  .lpf(2000).room(.5).roomsize(4).gain(.55).orbit(3)
+  .mask(drops)
+
+// octave-up doubling, second drop only
+$: chord(chords).anchor("a6").voicing().arp("0 2 3 1 0 2 3 2")
+  .s("piano").velocity(".4 .35 .33 .35 .38 .35 .33 .3").clip(1.5)
+  .lpf(3000).room(.7).roomsize(6).gain(.45).orbit(3)
+  .mask(drop2)
+
+// breakdown: sparse, breathing, perlin filter
+$: chord(chords).anchor("a5").voicing().arp("0 ~ ~ 2 ~ ~ ~ 4")
+  .s("piano").velocity(.5).clip(2.5).attack(.1)
+  .lpf(perlin.slow(32).range(1000, 2000))
+  .room(.85).roomsize(8).gain(.7).orbit(3)
+  .mask(brk)
+
+// outro piano - bars 57-62
+$: chord(chords).anchor("a5").voicing().arp("0 2 3 1 0 2 3 2")
+  .s("piano")
+  .lpf(perlin.slow(16).range(3200, 1200)).lpenv(2).lpa(.005).lpd(.15).lps(0)
+  .velocity(".7 .6 .55 .6 .65 .6 .55 .5").clip(1.2)
+  .room(.8).roomsize(7).gain(.75).orbit(3)
+  .mask("<0!56 1!6 0!2>")
+
+// final chord - bars 63-64
+$: chord("Am9").anchor("a5").voicing().struct("x@28")
+  .s("piano").clip(3).attack(.02)
+  .velocity(.6).room(1).roomsize(10).gain(.75).orbit(3)
+  .delay(.6).delaytime(.69).delayfeedback(.55)
+  .mask("<0!62 1!2>")
+
+// =====================================================================
+// HARMONIC BED
+// =====================================================================
+
+// supersaw pad - perlin filter so it evolves
 $: chord(chords).anchor("c5").voicing().s("supersaw").detune(.25)
   .attack(.5).release(1).clip(1)
-  .lpf(sine.slow(16).range(500, 2200)).room(.8).roomsize(7).gain(.25).orbit(2)
+  .lpf(perlin.slow(64).range(900, 2200))
+  .room(.8).roomsize(7).gain(.32).orbit(2)
+
 $: chord(chords).anchor("e5").voicing().s("gm_string_ensemble_1")
-  .attack(.7).release(1.2).clip(1).gain(.45).room(.8).roomsize(7).orbit(2)
+  .attack(.7).release(1.2).clip(1).gain(.6).room(.8).roomsize(7).orbit(2)
   .mask(drops)
 
-// BASS ---------------------------------------------------------------
+// breakdown cello drone
+$: note("<a1 f1 c2 g1 a1 f1 d2 e2>").slow(1)
+  .s("gm_cello").attack(1.5).release(1.5).clip(1).lpf(450).gain(.3)
+  .room(.95).roomsize(9).orbit(2)
+  .mask(brk)
+
+// breakdown pad
+$: chord(chords).anchor("e4").voicing().s("gm_pad_sweep")
+  .attack(2).release(2).clip(1)
+  .lpf(saw.slow(8).range(400, 2500))
+  .room(.95).roomsize(9).gain(.35).orbit(2)
+  .mask(brk)
+
+// final string - bars 63-64
+$: chord("Am9").anchor("e5").voicing()
+  .s("gm_string_ensemble_1").attack(.3).release(3).clip(1)
+  .lpf(1800).room(.95).roomsize(10).gain(.4).orbit(2)
+  .mask("<0!62 1!2>")
+
+// =====================================================================
+// COUNTER-MELODY (second drop only)
+// =====================================================================
+
+$: note("<[~ ~ e5@6] [~ ~ c5@6] [~ ~ b4@6] [~ ~ a4@6] [~ ~ a4@6] [~ ~ f4@6] [~ ~ d5@6] [~ ~ e5@6]>")
+  .s("sawtooth").lpf(1400).lpq(2).shape(.2)
+  .attack(.05).release(.4).clip(1).gain(.4)
+  .delay(.5).delaytime(.345).delayfeedback(.5)
+  .room(.7).roomsize(6).pan(sine.slow(8).range(.4,.6)).orbit(3)
+  .mask(drop2)
+
+// =====================================================================
+// BASS
+// =====================================================================
+
+// Drop 1 sub - original
 $: note(roots).struct("x@6 x@4 x@4 ~ x")
   .s("sine").shape(.25).lpf(220).attack(.005).release(.08).clip(.95).gain(.9)
-  .mask(drums)
+  .mask(drop1s)
   ._scope()
+
+// Drop 2 sub - same rhythm, occasional octave pops
+$: note(roots).struct("x@6 x@4 x@4 ~ x")
+  .sometimesBy(.2, x => x.add(note(12)).clip(.4))
+  .s("sine").shape(.25).lpf(220).attack(.005).release(.08).clip(.95).gain(.9)
+  .mask(drop2)
+
+// Build sub
+$: note(roots).struct("x@6 x@4 x@4 ~ x")
+  .s("sine").shape(.25).lpf(220).attack(.005).release(.08).clip(.95).gain(.9)
+  .mask(build)
+
+// reese mid-bass - drops only, boosted so it actually carries
 $: note(roots).struct("x@6 x@4 x@4 ~ x").add(note(12))
-  .s("supersaw").detune(.15).lpf(450).lpq(1).clip(.95).gain(.25).orbit(3)
+  .s("supersaw").detune(.15).lpf(450).lpq(1).clip(.95).gain(.45).orbit(3)
   .mask(drops)
 
-// DRUMS --------------------------------------------------------------
+// =====================================================================
+// DRUMS
+// =====================================================================
+
 $: s("breaks165/2").fit().chop(16).cut(1).hpf(200).gain(.5)
   .lastOf(8, ply(2)).mask(drums)
-$: s("bd").beat("0,10", 16).bank("RolandTR909").gain(1.1)
-  .duck("2:3").duckdepth(".5:.3").duckattack(.14).mask(drop)
-$: s("sd").beat("4,12", 16).bank("RolandTR909").gain(1).room(.35).roomsize(3).mask(drop)
-$: s("sd").beat("7,14", 16).bank("RolandTR909").gain(.25).speed(1.3).hpf(900).mask(drop)
-$: s("hh*16").bank("RolandTR909").gain("[.5 .2 .35 .2]*4").pan(sine.slow(3).range(.4,.6))
-  .lpf(saw.slow(8).range(800, 9000)).mask(build)          // filtered hats in the build
-$: s("hh*16").bank("RolandTR909").gain("[.55 .25 .4 .25]*4").mask(drop)
-$: s("cr").bank("RolandTR909").gain(.5).room(.5).mask("<0!16 1 0!23 1 0!23>")
-// riser into the drop
-$: s("white").slow(4).attack(3).release(.5).lpf(saw.slow(4).range(200, 9000)).gain(.35).mask("<0!12 1!4 0!20 1!4 0!24>")
 
-// AIR ------------------------------------------------------------------
+// kick
+$: s("bd").beat("0,10", 16).bank("RolandTR909").gain(1.1)
+  .duck("2:3").duckdepth(".1:.15").duckattack(.14).mask(drop)
+
+$: s("sd").beat("4,12", 16).bank("RolandTR909").gain(1).room(.35).roomsize(3).mask(drop)
+
+$: s("sd").beat("7,14", 16).bank("RolandTR909").gain(.25).speed(1.3).hpf(900).mask(drop)
+
+// build hats
+$: s("hh*16").bank("RolandTR909").gain("[.5 .2 .35 .2]*4").pan(sine.slow(3).range(.4,.6))
+  .lpf(perlin.slow(8).range(1500, 9000)).mask(build)
+
+$: s("hh*16").bank("RolandTR909").gain("[.55 .25 .4 .25]*4").mask(drop)
+
+// crash - extended tail so it announces the drop
+$: s("cr").bank("RolandTR909").gain(.55).room(.7).roomsize(7)
+  .mask("<0!16 1 0!23 1 0!23>")
+
+// second-drop-only percussion
+$: s("hh").bank("RolandTR909").n(2).beat("2,6,10,14", 16)
+  .gain(.18).hpf(7000).pan(perlin.range(.5,.7))
+  .mask(drop2)
+
+$: s("sd").bank("RolandTR909").n(2).speed(1.6)
+  .struct("~ ~ ~ x ~ ~ x ~ ~ ~ x ~ ~ x ~ ~")
+  .gain(.1).hpf(1200).pan(perlin.range(.4,.6))
+  .mask(drop2)
+
+// =====================================================================
+// TRANSITIONS
+// =====================================================================
+
+// riser into drop 1
+$: s("white").slow(4).attack(3).release(.5)
+  .lpf(saw.slow(4).range(200, 9000)).gain(.35)
+  .mask("<0!12 1!4 0!20 1!4 0!24>")
+
+// riser into drop 2
+$: s("white").slow(4).attack(3).release(.5)
+  .lpf(saw.slow(4).range(200, 9000)).gain(.35)
+  .mask("<0!36 1!4 0!24>")
+
+// reverse cymbal into drop 1
+$: s("cr").bank("RolandTR909").speed(-1).gain(.4).room(.7).roomsize(7)
+  .mask("<0!15 1!1 0!48>")
+
+// reverse cymbal into drop 2
+$: s("cr").bank("RolandTR909").speed(-1).gain(.4).room(.7).roomsize(7)
+  .mask("<0!39 1!1 0!24>")
+
+// impact on the first beat of each drop
+$: note("a0").struct("x ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~")
+  .s("sine").lpf(80).shape(.4).attack(.001).release(.5).clip(1).gain(.8)
+  .room(.5).roomsize(6)
+  .mask("<0!16 1 0!23 1 0!23>")
+
+// =====================================================================
+// AIR
+// =====================================================================
+
 $: s("crackle").density(.02).gain(.15).hpf(2000)
 `,__vite_glob_0_5=`// "Slow Weather" @by Stefanos Amanuel
 // @genre liquid dnb, generative, long-form
@@ -1205,4 +1386,4 @@ Aliases: ${F.aliases.join(", ")}`)),B}const A=O!=null?M(O):void 0;return f[1]!=n
       color-scheme: ${e.light?"light":"dark"};
       ${Object.entries(e).map(([a,l])=>`--${a}: ${l} !important;`).join(`
 `)}
-    }`,setTheme(e),e.light?document.documentElement.classList.remove("dark"):document.documentElement.classList.add("dark"),resetThemeStyle?.(),resetThemeStyle=void 0,e.customStyle&&(resetThemeStyle=injectStyle(e.customStyle))}const getDocLabel=o=>o.name||o.longname;let ctrlDown=!1;typeof window<"u"&&(window.addEventListener("keyup",function(o){o.key=="Control"&&(ctrlDown=!1)},!0),window.addEventListener("keydown",function(o){o.key=="Control"&&(ctrlDown=!0)},!0));const strudelTooltip=hoverTooltip((o,e,a)=>{if(!ctrlDown)return null;let{from:l,to:u,text:d}=o.state.doc.lineAt(e),p=e,f=e;for(;p>l&&/\w/.test(d[p-l-1]);)p--;for(;f<u&&/\w/.test(d[f-l]);)f++;if(p==e&&a<0||f==e&&a>0)return null;let g=d.slice(p-l,f-l),b=jsdoc.docs.filter(k=>getDocLabel(k)===g)[0];if(!b){const k=jsdoc.docs.filter(O=>O.synonyms&&O.synonyms.includes(g))[0];if(!k)return null;b=getSynonymDoc(k,g)}return{pos:p,end:f,above:!1,arrow:!0,create(k){let O=document.createElement("div");O.className="strudel-tooltip";const M=Autocomplete(b);return O.appendChild(M),{dom:O}}}},{hoverTime:10}),isTooltipEnabled=o=>o?strudelTooltip:[],setWidgets=StateEffect.define(),setWidgetsInRange=StateEffect.define(),updateWidgets=(o,e,a=null)=>{a?o.dispatch({effects:setWidgetsInRange.of({widgets:e,range:a})}):o.dispatch({effects:setWidgets.of(e)})};function getWidgets(o,e){return o.filter(l=>l&&l.type&&l.type!=="slider").filter((l,u,d)=>u===d.findIndex(p=>p.type===l.type&&p.id===l.id)).sort((l,u)=>(l.to||0)-(u.to||0)).map(l=>{try{return Decoration.widget({widget:new BlockWidget(l,e),side:0}).range(l.to||l.from||0)}catch(u){return console.error("error creating widget",u),null}}).filter(Boolean)}const widgetPlugin=ViewPlugin.fromClass(class{decorations;constructor(o){this.decorations=Decoration.set([])}update(o){o.transactions.forEach(e=>{if(e.docChanged){this.decorations=this.decorations.map(e.changes);const a=this.decorations.iter();for(;a.value;)a.value?.widget instanceof BlockWidget&&(a.value.widget.from=a.from,a.value.widget.to=a.to),a.next()}for(let a of e.effects)if(a.is(setWidgetsInRange)){const{widgets:l,range:u}=a.value,[d,p]=u,f=[];this.decorations.between(0,o.view.state.doc.length,(b,k,O)=>{O.widget instanceof BlockWidget&&(b<d||b>p)&&f.push({from:O.widget.from,to:O.widget.to,type:O.widget.type,index:O.widget.index,id:O.widget.id})});const g=[...f,...l].filter((b,k,O)=>k===O.findIndex(M=>M.type===b.type&&M.id===b.id));this.decorations=Decoration.set(getWidgets(g,o.view))}else a.is(setWidgets)&&(this.decorations=Decoration.set(getWidgets(a.value,o.view)))})}},{decorations:o=>o.decorations}),widgetElements={};function setWidget(o,e){widgetElements[o]=e,e.id=o}class BlockWidget extends WidgetType{constructor(e,a){super(),(!e||typeof e!="object")&&(e={type:"unknown",from:0,to:0}),this.from=e.from||0,this.originalFrom=e.from||0,this.to=e.to||this.from,this.originalTo=e.to||this.from,this.type=e.type||"unknown",this.index=e.index||0,this.view=a,this.id=e.id||getWidgetID?.(e),this.widgetConfig=e}eq(e){return e instanceof BlockWidget?this.id===e.id&&this.from===e.from&&this.to===e.to&&this.type===e.type&&this.index===e.index:!1}toDOM(){let e=document.createElement("span");e.setAttribute("aria-hidden","true"),e.className="cm-widget-container";let a=widgetElements[this.id];if(a)a.id=this.id,e.appendChild(a);else{const l=document.createElement("span");l.setAttribute("aria-hidden","true"),l.className="cm-widget-placeholder",l.style.cssText="display: none;",l.id=this.id,e.appendChild(l)}return e}ignoreEvent(e){return!0}}function getActiveWidgets(o){if(!o||!o.state)return[];const e=o.plugin(widgetPlugin);if(!e||!e.decorations)return[];const a=[];return e.decorations.between(0,o.state.doc.length,(l,u,d)=>{d.widget instanceof BlockWidget&&a.push({type:d.widget.type,from:d.widget.from,to:d.widget.to,index:d.widget.index,id:d.widget.id})}),a}function registerWidget(o,e){registerWidgetType(o),e&&(Pattern$1.prototype[o]=function(a,l={fold:1}){return e(a,l,this)})}function getCanvasWidget(o,e={}){const{width:a=500,height:l=60,pixelRatio:u=window.devicePixelRatio}=e;let d=document.getElementById(o)||document.createElement("canvas");return d.width=a*u,d.height=l*u,d.style.width=a+"px",d.style.height=l+"px",setWidget(o,d),d}registerWidget("_pianoroll",(o,e={},a)=>{const l=getCanvasWidget(o,e).getContext("2d");return a.tag(o).pianoroll({fold:1,...e,ctx:l,id:o})});registerWidget("_punchcard",(o,e={},a)=>{const l=getCanvasWidget(o,e).getContext("2d");return a.tag(o).punchcard({fold:1,...e,ctx:l,id:o})});registerWidget("_spiral",(o,e={},a)=>{let l=e.size||275;e={width:l,height:l,...e,size:l/5};const u=getCanvasWidget(o,e).getContext("2d");return a.tag(o).spiral({...e,ctx:u,id:o})});registerWidget("_scope",(o,e={},a)=>{e={width:500,height:60,pos:.5,scale:1,...e};const l=getCanvasWidget(o,e).getContext("2d");return a.tag(o).scope({...e,ctx:l,id:o})});registerWidget("_pitchwheel",(o,e={},a)=>{let l=e.size||200;e={width:l,height:l,...e,size:l/5};const u=getCanvasWidget(o,e).getContext("2d");return a.pitchwheel({...e,ctx:u,id:o})});registerWidget("_spectrum",(o,e={},a)=>{let l=e.size||200;e={width:l,height:l,...e,size:l/5};const u=getCanvasWidget(o,e).getContext("2d");return a.spectrum({...e,ctx:u,id:o})});const extensions={isLineWrappingEnabled:o=>o?EditorView.lineWrapping:[],isBracketMatchingEnabled:o=>o?bracketMatching({brackets:"()[]{}<>"}):[],isBracketClosingEnabled:o=>o?closeBrackets():[],isLineNumbersDisplayed:o=>o?lineNumbers():[],theme,isAutoCompletionEnabled,isTooltipEnabled,isPatternHighlightingEnabled,isActiveLineHighlighted:o=>o?[highlightActiveLine(),highlightActiveLineGutter()]:[],isFlashEnabled,keybindings,isTabIndentationEnabled:o=>o?keymap.of([indentWithTab]):[],isMultiCursorEnabled:o=>o?[EditorState.allowMultipleSelections.of(!0),EditorView.clickAddsSelectionRange.of(e=>e.metaKey||e.ctrlKey)]:[]},compartments=Object.fromEntries(Object.keys(extensions).map(o=>[o,new Compartment])),defaultSettings={keybindings:"codemirror",isBracketMatchingEnabled:!1,isBracketClosingEnabled:!0,isLineNumbersDisplayed:!0,isActiveLineHighlighted:!1,isAutoCompletionEnabled:!1,isPatternHighlightingEnabled:!0,isFlashEnabled:!0,isTooltipEnabled:!1,isLineWrappingEnabled:!1,isTabIndentationEnabled:!1,isMultiCursorEnabled:!1,isBlockBasedEvalEnabled:!1,theme:"strudelTheme",fontFamily:"monospace",fontSize:18},codemirrorSettings=persistentAtom("codemirror-settings",defaultSettings,{encode:JSON.stringify,decode:JSON.parse});function initEditor({initialCode:o="",onChange:e,onEvaluate:a,onStop:l,root:u,mondo:d,strudelMirror:p}){const f=codemirrorSettings.get(),g=Object.keys(compartments).map(k=>compartments[k].of(extensions[k](parseBooleans(f[k]))));initTheme(f.theme);let b=EditorState.create({doc:o,extensions:[...g,basicSetup,d?[]:javascript(),javascriptLanguage.data.of({closeBrackets:{brackets:["(","[","{","'",'"',"<"]},bracketMatching:{brackets:["(","[","{","'",'"',"<"]}}),sliderPlugin,widgetPlugin,syntaxHighlighting(defaultHighlightStyle),EditorView.updateListener.of(k=>e(k)),drawSelection({cursorBlinkRate:0}),Prec.highest(keymap.of([{key:"Ctrl-Enter",run:()=>p?.isBlockBasedEvalEnabled?(evalBlock(p),!0):a?.()},{key:"Alt-Enter",run:()=>p?.isBlockBasedEvalEnabled?(evalBlock(p),!0):a?.()},{key:"Ctrl-.",run:()=>l?.()},{key:"Alt-.",preventDefault:!0,run:()=>l?.()},{key:"Alt-w",run:k=>jumpToCharacter(k,"$",1)},{key:"Alt-q",run:k=>jumpToCharacter(k,"$",-1)}]))]});return new EditorView({state:b,parent:u})}class StrudelMirror{constructor(e){const{root:a,id:l,initialCode:u="",onDraw:d,drawContext:p,drawTime:f=[0,0],autodraw:g,prebake:b,bgFill:k=!0,solo:O=!0,...M}=e;this.code=u,this.root=a,this.miniLocations=[],this.widgets=[],this.drawTime=f,this.drawContext=p,this.onDraw=d||this.draw,this.id=l||s4(),this.solo=O,this.isBlockBasedEvalEnabled=!1,this.drawer=new Drawer((B,N,z,H)=>{const ue=B.filter(q=>q.isActive(N));this.highlight(ue,N),this.onDraw(B,N,H)},f),this.prebaked=b(),g&&this.drawFirstFrame(),this.repl=repl$1({...M,id:l,onToggle:B=>{M?.onToggle?.(B),B?(this.drawer.start(this.repl.scheduler),this.solo&&document.dispatchEvent(new CustomEvent("start-repl",{detail:this.id}))):(this.drawer.stop(),updateMiniLocations(this.editor,[]),cleanupDraw(!0,l))},beforeEval:async({blockBased:B}={})=>{B||cleanupDraw(!0,l),await this.prebaked,await M?.beforeEval?.()},afterEval:B=>{this.miniLocations=B.meta?.miniLocations||[],this.widgets=B.meta?.widgets||[];const N=this.widgets.filter(q=>q.type==="slider"),z=this.widgets.filter(q=>q.type!=="slider"),H=B.range&&B.range.length>=2?B.range:null;updateSliderWidgets(this.editor,N,H),updateWidgets(this.editor,z,H),updateMiniLocations(this.editor,this.miniLocations,H),M?.afterEval?.(B);const ue=B.pattern.getPainters().length?this.drawTime:[0,0];this.drawer.setDrawTime(ue),this.drawer.invalidate(this.repl.scheduler),B.widgetRemoved&&cleanupDrawContext(l)}}),this.cleanupDrawContext=()=>cleanupDrawContext(l),this.editor=initEditor({root:a,initialCode:u,onChange:B=>{B.docChanged&&(this.code=B.state.doc.toString(),this.repl.setCode?.(this.code))},onEvaluate:()=>this.evaluate(),onStop:()=>this.stop(),mondo:M.mondo,strudelMirror:this});const A=this.root.querySelector(".cm-editor");A&&(this.root.style.display="block",k&&(this.root.style.backgroundColor="var(--background)"),A.style.backgroundColor="transparent");const F=codemirrorSettings.get();this.setFontSize(F.fontSize),this.setFontFamily(F.fontFamily),this.onStartRepl=B=>{this.solo&&B.detail!==this.id&&this.stop()},document.addEventListener("start-repl",this.onStartRepl),this.onEvaluateRequest=B=>{try{if(B.detail.view!==this.editor)return;logger$2("[repl] evaluate via event"),this.evaluate(),B?.cancelable&&B.preventDefault?.()}catch(N){console.error("Error handling repl-evaluate event",N)}},document.addEventListener("repl-evaluate",this.onEvaluateRequest),document.addEventListener("repl-stop",this.onStopRequest),this.onToggleComment=B=>{try{if(B.detail.view!==this.editor)return;toggleLineComment(this.editor),B?.cancelable&&B.preventDefault?.()}catch(N){console.error("Error handling repl-toggle-comment event",N)}},document.addEventListener("repl-toggle-comment",this.onToggleComment)}draw(e,a,l){l?.forEach(u=>u(this.drawContext,a,e,this.drawTime))}async drawFirstFrame(){if(this.onDraw){await this.prebaked;try{await this.repl.evaluate(this.code,!1),this.drawer.invalidate(this.repl.scheduler,-.001),this.onDraw?.(this.drawer.visibleHaps,-.001,this.drawer.painters)}catch{console.warn("first frame could not be painted")}}}async evaluate(e=!0){this.flash(),await this.repl.evaluate(this.code,e)}async stop(){this.repl.stop()}onStopRequest=e=>{try{if(e.detail.view!==this.editor)return;this.stop(),e?.cancelable&&e.preventDefault?.()}catch(a){console.error("Error handling repl-stop event",a)}};async toggle(){this.repl.scheduler.started?this.repl.stop():this.evaluate()}flash(e,a){flash(this.editor,e,a)}highlight(e,a){highlightMiniLocations(this.editor,a,e)}setFontSize(e){this.root.style.fontSize=e+"px"}setFontFamily(e){this.root.style.fontFamily=e;const a=this.root.querySelector(".cm-scroller");a&&(a.style.fontFamily=e)}reconfigureExtension(e,a){if(!extensions[e]){console.warn(`extension ${e} is not known`);return}a=parseBooleans(a);const l=extensions[e](a,this);this.editor.dispatch({effects:compartments[e].reconfigure(l)}),e==="theme"&&activateTheme(a)}setLineWrappingEnabled(e){this.reconfigureExtension("isLineWrappingEnabled",e)}setBlockBasedEvalEnabled(e){this.reconfigureExtension("isBlockBasedEvalEnabled",e)}setBracketMatchingEnabled(e){this.reconfigureExtension("isBracketMatchingEnabled",e)}setLineNumbersDisplayed(e){this.reconfigureExtension("isLineNumbersDisplayed",e)}setBracketClosingEnabled(e){this.reconfigureExtension("isBracketClosingEnabled",e)}setTheme(e){this.reconfigureExtension("theme",e)}setAutocompletionEnabled(e){this.reconfigureExtension("isAutoCompletionEnabled",e)}updateSettings(e){this.setFontSize(e.fontSize),this.setFontFamily(e.fontFamily);for(let l in extensions)this.reconfigureExtension(l,e[l]);e.isBlockBasedEvalEnabled!==void 0&&(this.isBlockBasedEvalEnabled=parseBooleans(e.isBlockBasedEvalEnabled));const a={...codemirrorSettings.get(),...e};codemirrorSettings.set(a)}changeSetting(e,a){if(extensions[e]){this.reconfigureExtension(e,a);return}else e==="fontFamily"?this.setFontFamily(a):e==="fontSize"&&this.setFontSize(a)}replaceCode(e,a,l){const u={from:a,to:l,insert:e};this.editor.dispatch({changes:u})}insertCode(e,a){this.replaceCode(e,a,a)}setCode(e){this.replaceCode(e,0,this.editor.state.doc.length)}getActiveWidgets(){return getActiveWidgets(this.editor)}getSliderWidgets(){return getSliderWidgets(this.editor)}getMiniLocations(){return this.miniLocations}clear(){this.onStartRepl&&document.removeEventListener("start-repl",this.onStartRepl),this.onEvaluateRequest&&document.removeEventListener("repl-evaluate",this.onEvaluateRequest),this.onStopRequest&&document.removeEventListener("repl-stop",this.onStopRequest),this.onToggleComment&&document.removeEventListener("repl-toggle-comment",this.onToggleComment)}getCursorLocation(){return this.editor.state.selection.main.head}setCursorLocation(e){return this.editor.dispatch({selection:{anchor:e}})}appendCode(e){const a=this.getCursorLocation();this.setCode(this.code+e),this.setCursorLocation(a)}}function parseBooleans(o){return{true:!0,false:!1}[o]??o}function s4(){return Math.floor((1+Math.random())*65536).toString(16).substring(1)}registerControl("markcss");const files=Object.assign({"./tracks/half-past-dawn.txt":__vite_glob_0_0,"./tracks/liquid-toolbox.txt":__vite_glob_0_1,"./tracks/low-tide-radio.txt":__vite_glob_0_2,"./tracks/ossuary.txt":__vite_glob_0_3,"./tracks/paper-lanterns.txt":__vite_glob_0_4,"./tracks/slow-weather.txt":__vite_glob_0_5,"./tracks/sodium-halo.txt":__vite_glob_0_6,"./tracks/wolves-at-the-fence.txt":__vite_glob_0_7}),tracks=Object.entries(files).map(([o,e])=>({title:(e.match(/^\/\/\s*"([^"]+)"/m)||[])[1]||o.split("/").pop(),code:e,path:o})).sort((o,e)=>(o.title==="Liquid Toolbox")-(e.title==="Liquid Toolbox")||o.title.localeCompare(e.title)),$=o=>document.getElementById(o),log=$("log"),state=$("state"),nav=$("tracks");let current=-1,visuals=!0;function setState(o){state.textContent=o?"playing":"stopped",state.classList.toggle("on",o)}function say(o,e=""){const a=document.createElement("div");for(a.textContent=o,e&&(a.className=e),log.appendChild(a);log.childElementCount>3;)log.removeChild(log.firstChild)}document.addEventListener(logger$2.key,o=>{const e=o.detail.message;say(e,/error/i.test(e)?"err":"")});const CDN="https://strudel.b-cdn.net",drawContext=getDrawContext("test-canvas",{pixelRatio:1});let audioInit;const ensureAudio=()=>audioInit??=initAudio(),stripVisuals=o=>visuals?o:o.replace(/\._?(pianoroll|scope|tscope|punchcard|spiral|pitchwheel)\([^)]*\)/g,""),slider=o=>o,editor=new StrudelMirror({defaultOutput:webaudioOutput,getTime:()=>getAudioContext().currentTime,transpiler,root:$("editor"),initialCode:"",drawTime:[-2,2],drawContext,bgFill:!1,autodraw:!1,prebake:async()=>{await evalScope(__vitePreload(()=>Promise.resolve().then(()=>strudel),void 0,import.meta.url),__vitePreload(()=>Promise.resolve().then(()=>index$5),void 0,import.meta.url),__vitePreload(()=>import("./index-BR5KpDwH.js"),[],import.meta.url),__vitePreload(()=>import("./index-CSSGgVPT.js"),[],import.meta.url),__vitePreload(()=>import("./index-_OxaNUaS.js"),[],import.meta.url),__vitePreload(()=>Promise.resolve().then(()=>index$6),void 0,import.meta.url),__vitePreload(()=>import("./index-DWoby08T.js"),[],import.meta.url),{slider}),await Promise.all([registerSynthSounds(),registerSoundfonts(),samples(`${CDN}/piano.json`,`${CDN}/piano/`,{prebake:!0}),samples(`${CDN}/tidal-drum-machines.json`,`${CDN}/tidal-drum-machines/machines/`,{prebake:!0,tag:"drum-machines"})]),aliasBank(`${CDN}/tidal-drum-machines-alias.json`),say("engine ready. pick a track, ctrl+enter to play.","ok")},beforeEval:()=>ensureAudio(),onToggle:o=>setState(o)});editor.evaluate=async function(o=!0){this.flash(),await this.repl.evaluate(stripVisuals(this.code),o)};editor.updateSettings({...codemirrorSettings.get(),theme:"strudelTheme",fontSize:15,fontFamily:"monospace",isLineNumbersDisplayed:!0,isAutoCompletionEnabled:!1,isLineWrappingEnabled:!1,isPatternHighlightingEnabled:!0});nav.replaceChildren(...tracks.map((o,e)=>{const a=document.createElement("a");return a.innerHTML=`<i>${e+1})</i>${o.title}`,a.onclick=()=>load(e),a}));function load(o){current=(o+tracks.length)%tracks.length,editor.setCode(tracks[current].code),editor.setCursorLocation(0),[...nav.children].forEach((e,a)=>e.classList.toggle("active",a===current)),say(`loaded ${tracks[current].title}`,"ok")}async function play(){try{await editor.evaluate()}catch(o){say(`error: ${o.message}`,"err")}}function stop(){editor.stop()}$("play").onclick=play;$("stop").onclick=stop;window.addEventListener("keydown",o=>{(o.ctrlKey||o.metaKey)&&(o.key==="ArrowDown"?(o.preventDefault(),load(current+1)):o.key==="ArrowUp"?(o.preventDefault(),load(current-1)):o.shiftKey&&o.key.toLowerCase()==="v"&&(o.preventDefault(),visuals=!visuals,say(`visuals ${visuals?"on":"off"} (takes effect on next play)`,"ok")))});const pick=parseInt(location.hash.slice(1),10);load(Number.isInteger(pick)&&pick>0?pick-1:0);export{analysers as $,getPunchcardPainter as A,getTheme as B,h$2 as C,Drawer as D,moveXY as E,Framer as F,pianoroll as G,pitchwheel as H,r as I,rescale as J,setTheme as K,smear as L,w as M,x$1 as N,y as O,zoomIn as P,getAudioContext as Q,noteToMidi as R,midiToFreq$1 as S,registerSound as T,onceEnded as U,releaseAudioNode as V,ClockBridge as W,DEFAULT_MAX_POLYPHONY as X,Warpmode as Y,aliasBank as Z,__pianoroll as _,addVoicings as a,registerSynthSounds as a$,analysersData as a0,applyFM as a1,applyGainCurve as a2,applyParameterModulators as a3,cleanupOnEnd as a4,connectBusModulator as a5,connectEnvelope as a6,connectLFO as a7,connectToDestination as a8,createFilter as a9,getLoadedBuffer as aA,getOscillator as aB,getParamADSR as aC,getParamLfo as aD,getPitchEnvelope as aE,getSampleBuffer as aF,getSampleBufferSource as aG,getSampleInfo as aH,getSound as aI,getSuperdoughAudioController as aJ,getVibratoOscillator as aK,getWorklet as aL,initAudio as aM,initAudioOnFirstClick as aN,loadBuffer$1 as aO,loadWorklets as aP,logger$1 as aQ,maxPolyphony as aR,multiChannelOrbits as aS,noises as aT,onTriggerSample as aU,onTriggerSynth as aV,processSampleMap as aW,rawdsp as aX,rawdspTrigger as aY,registerSampleSource as aZ,registerSamplesPrefix as a_,distortionAlgorithms as aa,drawFrequencyScope as ab,drawTimeScope as ac,drywet as ad,dspWorklet as ae,effectSend as af,ensureMinimalOutput as ag,errorLogger as ah,expDecay as ai,gainNode as aj,getADSRValues as ak,getAnalyserById as al,getAnalyzerData as am,getAudioContextCurrentTime as an,getAudioDevices as ao,getCachedBuffer as ap,getClockBridge as aq,getCompressor as ar,getDefaultValue as as,getDistortion as at,getDistortionAlgorithm as au,getDur as av,getDuration as aw,getEnvelope as ax,getFrequencyFromValue as ay,getLfo as az,resetVoicings as b,registerWaveTable as b0,registerWorklet as b1,renderPatternAudio as b2,resetDefaultValues as b3,resetDefaults as b4,resetGlobalEffects as b5,resetLoadedSounds as b6,resetSeenKeys as b7,reverseBuffer as b8,samples as b9,pure as bA,scheduleAtTime as ba,setAudioContext as bb,setDefault as bc,setDefaultAudioContext as bd,setDefaultValue as be,setDefaultValues as bf,setGainCurve as bg,setLogger as bh,setMaxPolyphony as bi,setMultiChannelOrbits as bj,setSuperdoughAudioController as bk,setVersionDefaults as bl,soundAlias as bm,soundMap$1 as bn,superdough as bo,superdoughTrigger as bp,supradoughsamples as bq,tables as br,waveformN as bs,webAudioTimeout as bt,webaudioOutput as bu,webaudioRepl as bv,register as bw,tokenizeNote$3 as bx,noteToMidi$1 as by,isNote as bz,complex as c,rootNotes as d,scaleTrans as e,scaleTranspose as f,setDefaultVoicings as g,setVoicingRange as h,simple as i,strans as j,transpose as k,voicingAlias as l,voicingRegistry as m,voicings as n,angle as o,cleanupDraw as p,cleanupDrawContext as q,registerVoicings as r,scale as s,trans as t,drawPianoroll as u,voicing as v,fill as w,getComputedPropertyValue as x,getDrawContext as y,getDrawOptions as z};
+    }`,setTheme(e),e.light?document.documentElement.classList.remove("dark"):document.documentElement.classList.add("dark"),resetThemeStyle?.(),resetThemeStyle=void 0,e.customStyle&&(resetThemeStyle=injectStyle(e.customStyle))}const getDocLabel=o=>o.name||o.longname;let ctrlDown=!1;typeof window<"u"&&(window.addEventListener("keyup",function(o){o.key=="Control"&&(ctrlDown=!1)},!0),window.addEventListener("keydown",function(o){o.key=="Control"&&(ctrlDown=!0)},!0));const strudelTooltip=hoverTooltip((o,e,a)=>{if(!ctrlDown)return null;let{from:l,to:u,text:d}=o.state.doc.lineAt(e),p=e,f=e;for(;p>l&&/\w/.test(d[p-l-1]);)p--;for(;f<u&&/\w/.test(d[f-l]);)f++;if(p==e&&a<0||f==e&&a>0)return null;let g=d.slice(p-l,f-l),b=jsdoc.docs.filter(k=>getDocLabel(k)===g)[0];if(!b){const k=jsdoc.docs.filter(O=>O.synonyms&&O.synonyms.includes(g))[0];if(!k)return null;b=getSynonymDoc(k,g)}return{pos:p,end:f,above:!1,arrow:!0,create(k){let O=document.createElement("div");O.className="strudel-tooltip";const M=Autocomplete(b);return O.appendChild(M),{dom:O}}}},{hoverTime:10}),isTooltipEnabled=o=>o?strudelTooltip:[],setWidgets=StateEffect.define(),setWidgetsInRange=StateEffect.define(),updateWidgets=(o,e,a=null)=>{a?o.dispatch({effects:setWidgetsInRange.of({widgets:e,range:a})}):o.dispatch({effects:setWidgets.of(e)})};function getWidgets(o,e){return o.filter(l=>l&&l.type&&l.type!=="slider").filter((l,u,d)=>u===d.findIndex(p=>p.type===l.type&&p.id===l.id)).sort((l,u)=>(l.to||0)-(u.to||0)).map(l=>{try{return Decoration.widget({widget:new BlockWidget(l,e),side:0}).range(l.to||l.from||0)}catch(u){return console.error("error creating widget",u),null}}).filter(Boolean)}const widgetPlugin=ViewPlugin.fromClass(class{decorations;constructor(o){this.decorations=Decoration.set([])}update(o){o.transactions.forEach(e=>{if(e.docChanged){this.decorations=this.decorations.map(e.changes);const a=this.decorations.iter();for(;a.value;)a.value?.widget instanceof BlockWidget&&(a.value.widget.from=a.from,a.value.widget.to=a.to),a.next()}for(let a of e.effects)if(a.is(setWidgetsInRange)){const{widgets:l,range:u}=a.value,[d,p]=u,f=[];this.decorations.between(0,o.view.state.doc.length,(b,k,O)=>{O.widget instanceof BlockWidget&&(b<d||b>p)&&f.push({from:O.widget.from,to:O.widget.to,type:O.widget.type,index:O.widget.index,id:O.widget.id})});const g=[...f,...l].filter((b,k,O)=>k===O.findIndex(M=>M.type===b.type&&M.id===b.id));this.decorations=Decoration.set(getWidgets(g,o.view))}else a.is(setWidgets)&&(this.decorations=Decoration.set(getWidgets(a.value,o.view)))})}},{decorations:o=>o.decorations}),widgetElements={};function setWidget(o,e){widgetElements[o]=e,e.id=o}class BlockWidget extends WidgetType{constructor(e,a){super(),(!e||typeof e!="object")&&(e={type:"unknown",from:0,to:0}),this.from=e.from||0,this.originalFrom=e.from||0,this.to=e.to||this.from,this.originalTo=e.to||this.from,this.type=e.type||"unknown",this.index=e.index||0,this.view=a,this.id=e.id||getWidgetID?.(e),this.widgetConfig=e}eq(e){return e instanceof BlockWidget?this.id===e.id&&this.from===e.from&&this.to===e.to&&this.type===e.type&&this.index===e.index:!1}toDOM(){let e=document.createElement("span");e.setAttribute("aria-hidden","true"),e.className="cm-widget-container";let a=widgetElements[this.id];if(a)a.id=this.id,e.appendChild(a);else{const l=document.createElement("span");l.setAttribute("aria-hidden","true"),l.className="cm-widget-placeholder",l.style.cssText="display: none;",l.id=this.id,e.appendChild(l)}return e}ignoreEvent(e){return!0}}function getActiveWidgets(o){if(!o||!o.state)return[];const e=o.plugin(widgetPlugin);if(!e||!e.decorations)return[];const a=[];return e.decorations.between(0,o.state.doc.length,(l,u,d)=>{d.widget instanceof BlockWidget&&a.push({type:d.widget.type,from:d.widget.from,to:d.widget.to,index:d.widget.index,id:d.widget.id})}),a}function registerWidget(o,e){registerWidgetType(o),e&&(Pattern$1.prototype[o]=function(a,l={fold:1}){return e(a,l,this)})}function getCanvasWidget(o,e={}){const{width:a=500,height:l=60,pixelRatio:u=window.devicePixelRatio}=e;let d=document.getElementById(o)||document.createElement("canvas");return d.width=a*u,d.height=l*u,d.style.width=a+"px",d.style.height=l+"px",setWidget(o,d),d}registerWidget("_pianoroll",(o,e={},a)=>{const l=getCanvasWidget(o,e).getContext("2d");return a.tag(o).pianoroll({fold:1,...e,ctx:l,id:o})});registerWidget("_punchcard",(o,e={},a)=>{const l=getCanvasWidget(o,e).getContext("2d");return a.tag(o).punchcard({fold:1,...e,ctx:l,id:o})});registerWidget("_spiral",(o,e={},a)=>{let l=e.size||275;e={width:l,height:l,...e,size:l/5};const u=getCanvasWidget(o,e).getContext("2d");return a.tag(o).spiral({...e,ctx:u,id:o})});registerWidget("_scope",(o,e={},a)=>{e={width:500,height:60,pos:.5,scale:1,...e};const l=getCanvasWidget(o,e).getContext("2d");return a.tag(o).scope({...e,ctx:l,id:o})});registerWidget("_pitchwheel",(o,e={},a)=>{let l=e.size||200;e={width:l,height:l,...e,size:l/5};const u=getCanvasWidget(o,e).getContext("2d");return a.pitchwheel({...e,ctx:u,id:o})});registerWidget("_spectrum",(o,e={},a)=>{let l=e.size||200;e={width:l,height:l,...e,size:l/5};const u=getCanvasWidget(o,e).getContext("2d");return a.spectrum({...e,ctx:u,id:o})});const extensions={isLineWrappingEnabled:o=>o?EditorView.lineWrapping:[],isBracketMatchingEnabled:o=>o?bracketMatching({brackets:"()[]{}<>"}):[],isBracketClosingEnabled:o=>o?closeBrackets():[],isLineNumbersDisplayed:o=>o?lineNumbers():[],theme,isAutoCompletionEnabled,isTooltipEnabled,isPatternHighlightingEnabled,isActiveLineHighlighted:o=>o?[highlightActiveLine(),highlightActiveLineGutter()]:[],isFlashEnabled,keybindings,isTabIndentationEnabled:o=>o?keymap.of([indentWithTab]):[],isMultiCursorEnabled:o=>o?[EditorState.allowMultipleSelections.of(!0),EditorView.clickAddsSelectionRange.of(e=>e.metaKey||e.ctrlKey)]:[]},compartments=Object.fromEntries(Object.keys(extensions).map(o=>[o,new Compartment])),defaultSettings={keybindings:"codemirror",isBracketMatchingEnabled:!1,isBracketClosingEnabled:!0,isLineNumbersDisplayed:!0,isActiveLineHighlighted:!1,isAutoCompletionEnabled:!1,isPatternHighlightingEnabled:!0,isFlashEnabled:!0,isTooltipEnabled:!1,isLineWrappingEnabled:!1,isTabIndentationEnabled:!1,isMultiCursorEnabled:!1,isBlockBasedEvalEnabled:!1,theme:"strudelTheme",fontFamily:"monospace",fontSize:18},codemirrorSettings=persistentAtom("codemirror-settings",defaultSettings,{encode:JSON.stringify,decode:JSON.parse});function initEditor({initialCode:o="",onChange:e,onEvaluate:a,onStop:l,root:u,mondo:d,strudelMirror:p}){const f=codemirrorSettings.get(),g=Object.keys(compartments).map(k=>compartments[k].of(extensions[k](parseBooleans(f[k]))));initTheme(f.theme);let b=EditorState.create({doc:o,extensions:[...g,basicSetup,d?[]:javascript(),javascriptLanguage.data.of({closeBrackets:{brackets:["(","[","{","'",'"',"<"]},bracketMatching:{brackets:["(","[","{","'",'"',"<"]}}),sliderPlugin,widgetPlugin,syntaxHighlighting(defaultHighlightStyle),EditorView.updateListener.of(k=>e(k)),drawSelection({cursorBlinkRate:0}),Prec.highest(keymap.of([{key:"Ctrl-Enter",run:()=>p?.isBlockBasedEvalEnabled?(evalBlock(p),!0):a?.()},{key:"Alt-Enter",run:()=>p?.isBlockBasedEvalEnabled?(evalBlock(p),!0):a?.()},{key:"Ctrl-.",run:()=>l?.()},{key:"Alt-.",preventDefault:!0,run:()=>l?.()},{key:"Alt-w",run:k=>jumpToCharacter(k,"$",1)},{key:"Alt-q",run:k=>jumpToCharacter(k,"$",-1)}]))]});return new EditorView({state:b,parent:u})}class StrudelMirror{constructor(e){const{root:a,id:l,initialCode:u="",onDraw:d,drawContext:p,drawTime:f=[0,0],autodraw:g,prebake:b,bgFill:k=!0,solo:O=!0,...M}=e;this.code=u,this.root=a,this.miniLocations=[],this.widgets=[],this.drawTime=f,this.drawContext=p,this.onDraw=d||this.draw,this.id=l||s4(),this.solo=O,this.isBlockBasedEvalEnabled=!1,this.drawer=new Drawer((B,N,z,H)=>{const ue=B.filter(q=>q.isActive(N));this.highlight(ue,N),this.onDraw(B,N,H)},f),this.prebaked=b(),g&&this.drawFirstFrame(),this.repl=repl$1({...M,id:l,onToggle:B=>{M?.onToggle?.(B),B?(this.drawer.start(this.repl.scheduler),this.solo&&document.dispatchEvent(new CustomEvent("start-repl",{detail:this.id}))):(this.drawer.stop(),updateMiniLocations(this.editor,[]),cleanupDraw(!0,l))},beforeEval:async({blockBased:B}={})=>{B||cleanupDraw(!0,l),await this.prebaked,await M?.beforeEval?.()},afterEval:B=>{this.miniLocations=B.meta?.miniLocations||[],this.widgets=B.meta?.widgets||[];const N=this.widgets.filter(q=>q.type==="slider"),z=this.widgets.filter(q=>q.type!=="slider"),H=B.range&&B.range.length>=2?B.range:null;updateSliderWidgets(this.editor,N,H),updateWidgets(this.editor,z,H),updateMiniLocations(this.editor,this.miniLocations,H),M?.afterEval?.(B);const ue=B.pattern.getPainters().length?this.drawTime:[0,0];this.drawer.setDrawTime(ue),this.drawer.invalidate(this.repl.scheduler),B.widgetRemoved&&cleanupDrawContext(l)}}),this.cleanupDrawContext=()=>cleanupDrawContext(l),this.editor=initEditor({root:a,initialCode:u,onChange:B=>{B.docChanged&&(this.code=B.state.doc.toString(),this.repl.setCode?.(this.code))},onEvaluate:()=>this.evaluate(),onStop:()=>this.stop(),mondo:M.mondo,strudelMirror:this});const A=this.root.querySelector(".cm-editor");A&&(this.root.style.display="block",k&&(this.root.style.backgroundColor="var(--background)"),A.style.backgroundColor="transparent");const F=codemirrorSettings.get();this.setFontSize(F.fontSize),this.setFontFamily(F.fontFamily),this.onStartRepl=B=>{this.solo&&B.detail!==this.id&&this.stop()},document.addEventListener("start-repl",this.onStartRepl),this.onEvaluateRequest=B=>{try{if(B.detail.view!==this.editor)return;logger$2("[repl] evaluate via event"),this.evaluate(),B?.cancelable&&B.preventDefault?.()}catch(N){console.error("Error handling repl-evaluate event",N)}},document.addEventListener("repl-evaluate",this.onEvaluateRequest),document.addEventListener("repl-stop",this.onStopRequest),this.onToggleComment=B=>{try{if(B.detail.view!==this.editor)return;toggleLineComment(this.editor),B?.cancelable&&B.preventDefault?.()}catch(N){console.error("Error handling repl-toggle-comment event",N)}},document.addEventListener("repl-toggle-comment",this.onToggleComment)}draw(e,a,l){l?.forEach(u=>u(this.drawContext,a,e,this.drawTime))}async drawFirstFrame(){if(this.onDraw){await this.prebaked;try{await this.repl.evaluate(this.code,!1),this.drawer.invalidate(this.repl.scheduler,-.001),this.onDraw?.(this.drawer.visibleHaps,-.001,this.drawer.painters)}catch{console.warn("first frame could not be painted")}}}async evaluate(e=!0){this.flash(),await this.repl.evaluate(this.code,e)}async stop(){this.repl.stop()}onStopRequest=e=>{try{if(e.detail.view!==this.editor)return;this.stop(),e?.cancelable&&e.preventDefault?.()}catch(a){console.error("Error handling repl-stop event",a)}};async toggle(){this.repl.scheduler.started?this.repl.stop():this.evaluate()}flash(e,a){flash(this.editor,e,a)}highlight(e,a){highlightMiniLocations(this.editor,a,e)}setFontSize(e){this.root.style.fontSize=e+"px"}setFontFamily(e){this.root.style.fontFamily=e;const a=this.root.querySelector(".cm-scroller");a&&(a.style.fontFamily=e)}reconfigureExtension(e,a){if(!extensions[e]){console.warn(`extension ${e} is not known`);return}a=parseBooleans(a);const l=extensions[e](a,this);this.editor.dispatch({effects:compartments[e].reconfigure(l)}),e==="theme"&&activateTheme(a)}setLineWrappingEnabled(e){this.reconfigureExtension("isLineWrappingEnabled",e)}setBlockBasedEvalEnabled(e){this.reconfigureExtension("isBlockBasedEvalEnabled",e)}setBracketMatchingEnabled(e){this.reconfigureExtension("isBracketMatchingEnabled",e)}setLineNumbersDisplayed(e){this.reconfigureExtension("isLineNumbersDisplayed",e)}setBracketClosingEnabled(e){this.reconfigureExtension("isBracketClosingEnabled",e)}setTheme(e){this.reconfigureExtension("theme",e)}setAutocompletionEnabled(e){this.reconfigureExtension("isAutoCompletionEnabled",e)}updateSettings(e){this.setFontSize(e.fontSize),this.setFontFamily(e.fontFamily);for(let l in extensions)this.reconfigureExtension(l,e[l]);e.isBlockBasedEvalEnabled!==void 0&&(this.isBlockBasedEvalEnabled=parseBooleans(e.isBlockBasedEvalEnabled));const a={...codemirrorSettings.get(),...e};codemirrorSettings.set(a)}changeSetting(e,a){if(extensions[e]){this.reconfigureExtension(e,a);return}else e==="fontFamily"?this.setFontFamily(a):e==="fontSize"&&this.setFontSize(a)}replaceCode(e,a,l){const u={from:a,to:l,insert:e};this.editor.dispatch({changes:u})}insertCode(e,a){this.replaceCode(e,a,a)}setCode(e){this.replaceCode(e,0,this.editor.state.doc.length)}getActiveWidgets(){return getActiveWidgets(this.editor)}getSliderWidgets(){return getSliderWidgets(this.editor)}getMiniLocations(){return this.miniLocations}clear(){this.onStartRepl&&document.removeEventListener("start-repl",this.onStartRepl),this.onEvaluateRequest&&document.removeEventListener("repl-evaluate",this.onEvaluateRequest),this.onStopRequest&&document.removeEventListener("repl-stop",this.onStopRequest),this.onToggleComment&&document.removeEventListener("repl-toggle-comment",this.onToggleComment)}getCursorLocation(){return this.editor.state.selection.main.head}setCursorLocation(e){return this.editor.dispatch({selection:{anchor:e}})}appendCode(e){const a=this.getCursorLocation();this.setCode(this.code+e),this.setCursorLocation(a)}}function parseBooleans(o){return{true:!0,false:!1}[o]??o}function s4(){return Math.floor((1+Math.random())*65536).toString(16).substring(1)}registerControl("markcss");const files=Object.assign({"./tracks/half-past-dawn.txt":__vite_glob_0_0,"./tracks/liquid-toolbox.txt":__vite_glob_0_1,"./tracks/low-tide-radio.txt":__vite_glob_0_2,"./tracks/ossuary.txt":__vite_glob_0_3,"./tracks/paper-lanterns.txt":__vite_glob_0_4,"./tracks/slow-weather.txt":__vite_glob_0_5,"./tracks/sodium-halo.txt":__vite_glob_0_6,"./tracks/wolves-at-the-fence.txt":__vite_glob_0_7}),tracks=Object.entries(files).map(([o,e])=>({title:(e.match(/^\/\/\s*"([^"]+)"/m)||[])[1]||o.split("/").pop(),code:e,path:o})).sort((o,e)=>(o.title==="Liquid Toolbox")-(e.title==="Liquid Toolbox")||o.title.localeCompare(e.title)),$=o=>document.getElementById(o),log=$("log"),state=$("state"),nav=$("tracks");let current=-1,visuals=!0;function setState(o){state.textContent=o?"playing":"stopped",state.classList.toggle("on",o)}function say(o,e=""){const a=document.createElement("div");for(a.textContent=o,e&&(a.className=e),log.appendChild(a);log.childElementCount>3;)log.removeChild(log.firstChild)}document.addEventListener(logger$2.key,o=>{const e=o.detail.message;say(e,/error/i.test(e)?"err":"")});const CDN="https://strudel.b-cdn.net",drawContext=getDrawContext("test-canvas",{pixelRatio:1});let audioInit;const ensureAudio=()=>audioInit??=initAudio(),stripVisuals=o=>visuals?o:o.replace(/\._?(pianoroll|scope|tscope|punchcard|spiral|pitchwheel)\([^)]*\)/g,""),slider=o=>o,editor=new StrudelMirror({defaultOutput:webaudioOutput,getTime:()=>getAudioContext().currentTime,transpiler,root:$("editor"),initialCode:"",drawTime:[-2,2],drawContext,bgFill:!1,autodraw:!1,prebake:async()=>{await evalScope(__vitePreload(()=>Promise.resolve().then(()=>strudel),void 0,import.meta.url),__vitePreload(()=>Promise.resolve().then(()=>index$5),void 0,import.meta.url),__vitePreload(()=>import("./index-BqR5ZHmk.js"),[],import.meta.url),__vitePreload(()=>import("./index-Bbxhv4jb.js"),[],import.meta.url),__vitePreload(()=>import("./index-b6DpowTr.js"),[],import.meta.url),__vitePreload(()=>Promise.resolve().then(()=>index$6),void 0,import.meta.url),__vitePreload(()=>import("./index-BQ2-uRRv.js"),[],import.meta.url),{slider}),await Promise.all([registerSynthSounds(),registerSoundfonts(),samples(`${CDN}/piano.json`,`${CDN}/piano/`,{prebake:!0}),samples(`${CDN}/tidal-drum-machines.json`,`${CDN}/tidal-drum-machines/machines/`,{prebake:!0,tag:"drum-machines"})]),aliasBank(`${CDN}/tidal-drum-machines-alias.json`),say("engine ready. pick a track, ctrl+enter to play.","ok")},beforeEval:()=>ensureAudio(),onToggle:o=>setState(o)});editor.evaluate=async function(o=!0){this.flash(),await this.repl.evaluate(stripVisuals(this.code),o)};editor.updateSettings({...codemirrorSettings.get(),theme:"strudelTheme",fontSize:15,fontFamily:"monospace",isLineNumbersDisplayed:!0,isAutoCompletionEnabled:!1,isLineWrappingEnabled:!1,isPatternHighlightingEnabled:!0});nav.replaceChildren(...tracks.map((o,e)=>{const a=document.createElement("a");return a.innerHTML=`<i>${e+1})</i>${o.title}`,a.onclick=()=>load(e),a}));function load(o){current=(o+tracks.length)%tracks.length,editor.setCode(tracks[current].code),editor.setCursorLocation(0),[...nav.children].forEach((e,a)=>e.classList.toggle("active",a===current)),say(`loaded ${tracks[current].title}`,"ok")}async function play(){try{await editor.evaluate()}catch(o){say(`error: ${o.message}`,"err")}}function stop(){editor.stop()}$("play").onclick=play;$("stop").onclick=stop;window.addEventListener("keydown",o=>{(o.ctrlKey||o.metaKey)&&(o.key==="ArrowDown"?(o.preventDefault(),load(current+1)):o.key==="ArrowUp"?(o.preventDefault(),load(current-1)):o.shiftKey&&o.key.toLowerCase()==="v"&&(o.preventDefault(),visuals=!visuals,say(`visuals ${visuals?"on":"off"} (takes effect on next play)`,"ok")))});const pick=parseInt(location.hash.slice(1),10);load(Number.isInteger(pick)&&pick>0?pick-1:0);export{analysers as $,getPunchcardPainter as A,getTheme as B,h$2 as C,Drawer as D,moveXY as E,Framer as F,pianoroll as G,pitchwheel as H,r as I,rescale as J,setTheme as K,smear as L,w as M,x$1 as N,y as O,zoomIn as P,getAudioContext as Q,noteToMidi as R,midiToFreq$1 as S,registerSound as T,onceEnded as U,releaseAudioNode as V,ClockBridge as W,DEFAULT_MAX_POLYPHONY as X,Warpmode as Y,aliasBank as Z,__pianoroll as _,addVoicings as a,registerSynthSounds as a$,analysersData as a0,applyFM as a1,applyGainCurve as a2,applyParameterModulators as a3,cleanupOnEnd as a4,connectBusModulator as a5,connectEnvelope as a6,connectLFO as a7,connectToDestination as a8,createFilter as a9,getLoadedBuffer as aA,getOscillator as aB,getParamADSR as aC,getParamLfo as aD,getPitchEnvelope as aE,getSampleBuffer as aF,getSampleBufferSource as aG,getSampleInfo as aH,getSound as aI,getSuperdoughAudioController as aJ,getVibratoOscillator as aK,getWorklet as aL,initAudio as aM,initAudioOnFirstClick as aN,loadBuffer$1 as aO,loadWorklets as aP,logger$1 as aQ,maxPolyphony as aR,multiChannelOrbits as aS,noises as aT,onTriggerSample as aU,onTriggerSynth as aV,processSampleMap as aW,rawdsp as aX,rawdspTrigger as aY,registerSampleSource as aZ,registerSamplesPrefix as a_,distortionAlgorithms as aa,drawFrequencyScope as ab,drawTimeScope as ac,drywet as ad,dspWorklet as ae,effectSend as af,ensureMinimalOutput as ag,errorLogger as ah,expDecay as ai,gainNode as aj,getADSRValues as ak,getAnalyserById as al,getAnalyzerData as am,getAudioContextCurrentTime as an,getAudioDevices as ao,getCachedBuffer as ap,getClockBridge as aq,getCompressor as ar,getDefaultValue as as,getDistortion as at,getDistortionAlgorithm as au,getDur as av,getDuration as aw,getEnvelope as ax,getFrequencyFromValue as ay,getLfo as az,resetVoicings as b,registerWaveTable as b0,registerWorklet as b1,renderPatternAudio as b2,resetDefaultValues as b3,resetDefaults as b4,resetGlobalEffects as b5,resetLoadedSounds as b6,resetSeenKeys as b7,reverseBuffer as b8,samples as b9,pure as bA,scheduleAtTime as ba,setAudioContext as bb,setDefault as bc,setDefaultAudioContext as bd,setDefaultValue as be,setDefaultValues as bf,setGainCurve as bg,setLogger as bh,setMaxPolyphony as bi,setMultiChannelOrbits as bj,setSuperdoughAudioController as bk,setVersionDefaults as bl,soundAlias as bm,soundMap$1 as bn,superdough as bo,superdoughTrigger as bp,supradoughsamples as bq,tables as br,waveformN as bs,webAudioTimeout as bt,webaudioOutput as bu,webaudioRepl as bv,register as bw,tokenizeNote$3 as bx,noteToMidi$1 as by,isNote as bz,complex as c,rootNotes as d,scaleTrans as e,scaleTranspose as f,setDefaultVoicings as g,setVoicingRange as h,simple as i,strans as j,transpose as k,voicingAlias as l,voicingRegistry as m,voicings as n,angle as o,cleanupDraw as p,cleanupDrawContext as q,registerVoicings as r,scale as s,trans as t,drawPianoroll as u,voicing as v,fill as w,getComputedPropertyValue as x,getDrawContext as y,getDrawOptions as z};
