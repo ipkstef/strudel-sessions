@@ -1,0 +1,25 @@
+{
+  "name": "strudel-sessions-player",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "sync": "node sync-tracks.mjs",
+    "dev": "node sync-tracks.mjs && vite",
+    "build": "node sync-tracks.mjs && vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^6.0.11",
+    "vite-plugin-bundle-audioworklet": "link:../../strudel/packages/vite-plugin-bundle-audioworklet"
+  },
+  "dependencies": {
+    "@strudel/core": "link:../../strudel/packages/core",
+    "@strudel/draw": "link:../../strudel/packages/draw",
+    "@strudel/mini": "link:../../strudel/packages/mini",
+    "@strudel/soundfonts": "link:../../strudel/packages/soundfonts",
+    "@strudel/tonal": "link:../../strudel/packages/tonal",
+    "@strudel/transpiler": "link:../../strudel/packages/transpiler",
+    "@strudel/webaudio": "link:../../strudel/packages/webaudio"
+  }
+}

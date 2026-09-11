@@ -1,0 +1,61 @@
+name: build player
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'liquid/**'
+      - 'player-src/**'
+
+permissions:
+  contents: write
+
+env:
+  # commit of https://codeberg.org/uzu/strudel the player is built against
+  STRUDEL_REF: 8f81463b9cb5ddd5f117ed7baef6a1fde9445dc2
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: strudel-sessions
+
+      - name: fetch strudel
+        run: |
+          git clone --filter=blob:none https://codeberg.org/uzu/strudel strudel
+          git -C strudel checkout "$STRUDEL_REF"
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: strudel/pnpm-lock.yaml
+
+      - name: install strudel packages
+        working-directory: strudel
+        run: pnpm install --frozen-lockfile
+
+      - name: build player
+        working-directory: strudel-sessions/player-src
+        run: |
+          pnpm install
+          pnpm build
+
+      - name: commit player
+        working-directory: strudel-sessions
+        run: |
+          rm -rf player/assets player/index.html
+          cp -r player-src/dist/* player/
+          if git diff --quiet -- player; then echo "player unchanged"; exit 0; fi
+          git config user.name "${{ github.actor }}"
+          git config user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
+          git add player
+          git commit -m "Rebuild player"
+          git push
